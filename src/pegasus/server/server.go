@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"pegasus/log"
 	"pegasus/route"
@@ -53,16 +54,34 @@ func (h *serverHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type Server struct {
-	ListenPort int
+	listener net.Listener
 }
 
-func (s *Server) ListenAndServe() error {
+func (s *Server) Listen(ip string) (err error) {
+	addr := fmt.Sprintf("%s:", ip)
+	s.listener, err = net.Listen("tcp", addr)
+	return
+}
+
+func (s *Server) GetListenAddr() string {
+	return s.listener.Addr().String()
+}
+
+func (s *Server) Serve() error {
+	r := route.BuildRouter()
+	handler := &serverHandler{
+		handler: r,
+	}
+	return http.Serve(s.listener, handler)
+}
+
+func (s *Server) ListenAndServe(listenPort int) error {
 	r := route.BuildRouter()
 	handler := &serverHandler{
 		handler: r,
 	}
 	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%d", s.ListenPort),
+		Addr:    fmt.Sprintf(":%d", listenPort),
 		Handler: handler,
 	}
 	return httpServer.ListenAndServe()

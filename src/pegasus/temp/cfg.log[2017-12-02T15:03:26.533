@@ -1,0 +1,849 @@
+2017-12-02 15:03:26 Info =====Start CFG server=====
+2017-12-02 15:03:26 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 17:11:45 Info =====Start CFG server=====
+2017-12-02 17:11:45 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 17:11:45 Info vdst ptr
+2017-12-02 17:11:56 Info =====Start CFG server=====
+2017-12-02 17:11:56 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 17:11:56 Info vdst ptr
+2017-12-02 17:12:16 Info =====Start CFG server=====
+2017-12-02 17:12:16 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 17:12:16 Info vdst ptr
+2017-12-02 17:23:43 Info =====Start CFG server=====
+2017-12-02 17:23:43 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 17:23:43 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 17:46:53 Info =====Start CFG server=====
+2017-12-02 17:46:53 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 17:46:53 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 17:53:52 Info =====Start CFG server=====
+2017-12-02 17:53:52 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 17:53:52 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 17:54:06 Info =====Start CFG server=====
+2017-12-02 17:54:06 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 17:54:26 Info =====Start CFG server=====
+2017-12-02 17:54:48 Info =====Start CFG server=====
+2017-12-02 17:54:48 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 17:54:48 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 17:56:47 Info =====Start CFG server=====
+2017-12-02 17:56:47 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 17:56:47 Info cDef struct
+2017-12-02 17:56:47 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 17:58:12 Info =====Start CFG server=====
+2017-12-02 17:58:12 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 17:58:12 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 17:58:12 Info cdef struct
+2017-12-02 17:58:45 Info =====Start CFG server=====
+2017-12-02 17:58:45 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 17:58:45 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 17:58:45 Info cdef struct
+2017-12-02 18:00:19 Info =====Start CFG server=====
+2017-12-02 18:00:19 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 18:00:19 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 18:00:19 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 18:00:19 Info Field Field1: 0
+2017-12-02 18:00:19 Info Field Field2: 
+2017-12-02 18:00:19 Info Add route "getCfgHandler"
+2017-12-02 18:00:41 Info =====Start CFG server=====
+2017-12-02 18:00:41 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 18:00:41 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-02 18:00:41 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 18:00:41 Info Field Field1: 12
+2017-12-02 18:00:41 Info Field Field2: abc
+2017-12-02 18:00:41 Info Add route "getCfgHandler"
+2017-12-02 18:01:23 Info =====Start CFG server=====
+2017-12-02 18:01:23 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 18:01:23 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-02 18:01:23 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 18:01:23 Info Field Field1: 12
+2017-12-02 18:01:23 Info Field Field2: abc
+2017-12-02 18:01:23 Info Add route "getCfgHandler"
+2017-12-02 18:01:36 Info =====Start CFG server=====
+2017-12-02 18:01:36 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 18:01:36 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 18:01:36 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 18:01:36 Info Field Field1: 12
+2017-12-02 18:01:36 Info Field Field2: abc
+2017-12-02 18:01:36 Info Add route "getCfgHandler"
+2017-12-02 18:01:55 Info =====Start CFG server=====
+2017-12-02 18:01:55 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 18:01:55 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 18:01:55 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 18:01:55 Info Field Field1: 34
+2017-12-02 18:01:55 Info Field Field2: efg
+2017-12-02 18:01:55 Info Add route "getCfgHandler"
+2017-12-02 18:01:58 Info =====Start CFG server=====
+2017-12-02 18:01:58 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 18:01:58 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 18:01:58 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 18:01:58 Info Field Field1: 34
+2017-12-02 18:01:58 Info Field Field2: efg
+2017-12-02 18:01:58 Info Add route "getCfgHandler"
+2017-12-02 18:02:00 Info Remote 127.0.0.1:58642, method GET, access /cfg/pegasus.dummypkg.Dummy
+2017-12-02 18:06:33 Info =====Start CFG server=====
+2017-12-02 18:06:33 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 18:06:33 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 18:06:33 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 18:06:33 Info Field Field1: 34
+2017-12-02 18:06:33 Info Field Field2: efg
+2017-12-02 18:06:33 Info Add route "getCfgHandler"
+2017-12-02 18:06:44 Info Remote 127.0.0.1:58801, method GET, access /cfg/pegasus.dummypkg.Dummy
+2017-12-02 18:06:44 Info Get cfg:
+{
+  "Field1": 34,
+  "Field2": "efg"
+}
+
+2017-12-02 18:11:58 Info =====Start CFG server=====
+2017-12-02 18:11:58 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 18:11:58 Info Load cfg pegasus.dummypkg.Dummy from default value
+2017-12-02 18:11:58 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 18:11:58 Info Field Field1: 34
+2017-12-02 18:11:58 Info Field Field2: efg
+2017-12-02 18:11:58 Info Add route "getCfgHandler"
+2017-12-02 18:12:02 Info Remote 127.0.0.1:59189, method GET, access /cfg/pegasus.dummypkg.Dummy
+2017-12-02 18:12:22 Info Remote 127.0.0.1:59195, method GET, access /cfg/pegasus.dummypkg.Dummy
+2017-12-02 18:25:06 Info =====Start CFG server=====
+2017-12-02 18:25:06 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 18:25:06 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-02 18:25:06 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 18:25:06 Info Field Field1: 12
+2017-12-02 18:25:06 Info Field Field2: abc
+2017-12-02 18:25:06 Info Add route "getCfgHandler"
+2017-12-02 18:25:06 Info Add route "cfgPingHandler"
+2017-12-02 18:25:11 Info Remote 127.0.0.1:60723, method GET, access /ping
+2017-12-02 18:25:11 Info Remote 127.0.0.1:60723, method GET, access /cfg/pegasus.dummypkg.Dummy
+2017-12-02 18:36:00 Info =====Start CFG server=====
+2017-12-02 18:36:00 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 18:36:00 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-02 18:36:00 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 18:36:00 Info Field Field1: 12
+2017-12-02 18:36:00 Info Field Field2: abc
+2017-12-02 18:36:00 Info Add route "getCfgHandler"
+2017-12-02 18:36:00 Info Add route "cfgPingHandler"
+2017-12-02 18:36:03 Info Remote 127.0.0.1:61485, method GET, access /ping
+2017-12-02 18:36:03 Info Remote 127.0.0.1:61485, method GET, access /ping
+2017-12-02 18:36:03 Info Remote 127.0.0.1:61485, method GET, access /cfg/pegasus.dummypkg.Dummy
+2017-12-02 18:36:42 Info =====Start CFG server=====
+2017-12-02 18:36:42 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 18:36:42 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-02 18:36:42 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 18:36:42 Info Field Field1: 12
+2017-12-02 18:36:42 Info Field Field2: abc
+2017-12-02 18:36:42 Info Add route "getCfgHandler"
+2017-12-02 18:36:42 Info Add route "cfgPingHandler"
+2017-12-02 18:36:43 Info Remote 127.0.0.1:61525, method GET, access /ping
+2017-12-02 18:36:43 Info Remote 127.0.0.1:61525, method GET, access /cfg/pegasus.dummypkg.Dummy
+2017-12-02 18:38:16 Info =====Start CFG server=====
+2017-12-02 18:38:16 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 18:38:16 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-02 18:38:16 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 18:38:16 Info Field Field1: 12
+2017-12-02 18:38:16 Info Field Field2: abc
+2017-12-02 18:38:16 Info Add route "getCfgHandler"
+2017-12-02 18:38:16 Info Add route "cfgPingHandler"
+2017-12-02 18:38:18 Info Remote 127.0.0.1:61785, method GET, access /ping
+2017-12-02 18:38:18 Info Remote 127.0.0.1:61785, method GET, access /cfg/pegasus.dummypkg.Dummy
+2017-12-02 22:52:10 Info =====Start CFG server=====
+2017-12-02 22:52:10 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-02 22:52:10 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-02 22:52:10 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-02 22:52:10 Info Field Field1: 12
+2017-12-02 22:52:10 Info Field Field2: abc
+2017-12-02 22:52:10 Info Add route "getCfgHandler"
+2017-12-02 22:52:10 Info Add route "cfgPingHandler"
+2017-12-02 22:52:10 Info Add route "getMasterHandler"
+2017-12-02 22:52:10 Info Add route "postMasterHandler"
+2017-12-02 22:52:21 Info Remote 127.0.0.1:65479, method GET, access /ping
+2017-12-02 22:52:21 Info Remote 127.0.0.1:65479, method GET, access /master
+2017-12-02 22:52:27 Info Remote 127.0.0.1:65484, method GET, access /ping
+2017-12-02 22:52:27 Info Remote 127.0.0.1:65484, method GET, access /master
+2017-12-02 23:00:44 Info Remote 127.0.0.1:50338, method GET, access /ping
+2017-12-02 23:00:44 Info Remote 127.0.0.1:50338, method POST, access /master
+2017-12-02 23:00:44 Info Handle register master request from 127.0.0.1:50338
+2017-12-02 23:00:50 Info Remote 127.0.0.1:50343, method GET, access /ping
+2017-12-02 23:00:50 Info Remote 127.0.0.1:50343, method POST, access /master
+2017-12-02 23:00:50 Info Handle register master request from 127.0.0.1:50343
+2017-12-02 23:01:16 Info Remote 127.0.0.1:50368, method GET, access /ping
+2017-12-02 23:01:16 Info Remote 127.0.0.1:50368, method POST, access /master
+2017-12-02 23:01:16 Info Handle register master request from 127.0.0.1:50368
+2017-12-02 23:01:16 Info Remote 127.0.0.1:50368, method GET, access /master
+2017-12-21 15:56:40 Info =====Start CFG server=====
+2017-12-21 15:56:40 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-21 15:56:40 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-21 15:56:40 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-21 15:56:40 Info Field Field1: 12
+2017-12-21 15:56:40 Info Field Field2: abc
+2017-12-21 15:56:40 Info Add route "getCfgHandler"
+2017-12-21 15:56:40 Info Add route "cfgPingHandler"
+2017-12-21 15:56:40 Info Add route "getMasterHandler"
+2017-12-21 15:56:40 Info Add route "postMasterHandler"
+2017-12-21 15:56:40 Info Add route "testPost"
+2017-12-21 15:57:44 Info =====Start CFG server=====
+2017-12-21 15:57:44 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-21 15:57:44 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-21 15:57:44 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-21 15:57:44 Info Field Field1: 12
+2017-12-21 15:57:44 Info Field Field2: abc
+2017-12-21 15:57:44 Info Add route "getCfgHandler"
+2017-12-21 15:57:44 Info Add route "cfgPingHandler"
+2017-12-21 15:57:44 Info Add route "getMasterHandler"
+2017-12-21 15:57:44 Info Add route "postMasterHandler"
+2017-12-21 15:57:44 Info Add route "testPost"
+2017-12-21 15:57:46 Info Remote 127.0.0.1:62767, method GET, access /ping
+2017-12-21 15:57:46 Info Remote 127.0.0.1:62767, method POST, access /master
+2017-12-21 15:57:46 Info Handle register master request from 127.0.0.1:62767
+2017-12-21 15:57:46 Info Remote 127.0.0.1:62767, method GET, access /master
+2017-12-21 15:57:46 Info Remote 127.0.0.1:62767, method POST, access /master
+2017-12-21 15:57:46 Info Handle register master request from 127.0.0.1:62767
+2017-12-21 15:58:10 Info Remote 127.0.0.1:62782, method GET, access /ping
+2017-12-21 15:58:10 Info Remote 127.0.0.1:62782, method POST, access /master
+2017-12-21 15:58:10 Info Handle register master request from 127.0.0.1:62782
+2017-12-21 15:58:10 Info Remote 127.0.0.1:62782, method GET, access /master
+2017-12-21 15:58:10 Info Remote 127.0.0.1:62782, method POST, access /test
+2017-12-21 15:58:10 Info Request content-type application/json
+2017-12-21 15:58:10 Info Get request body:
+{
+  "1": "a",
+  "2": "b"
+}
+
+2017-12-21 16:07:22 Info =====Start CFG server=====
+2017-12-21 16:07:22 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-21 16:07:22 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-21 16:07:22 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-21 16:07:22 Info Field Field1: 12
+2017-12-21 16:07:22 Info Field Field2: abc
+2017-12-21 16:07:22 Info Add route "getCfgHandler"
+2017-12-21 16:07:22 Info Add route "cfgPingHandler"
+2017-12-21 16:07:22 Info Add route "getMasterHandler"
+2017-12-21 16:07:22 Info Add route "postMasterHandler"
+2017-12-21 16:07:22 Info Add route "testPost"
+2017-12-21 16:07:27 Info Remote 127.0.0.1:63268, method GET, access /ping
+2017-12-21 16:07:27 Info Remote 127.0.0.1:63268, method POST, access /master
+2017-12-21 16:07:27 Info Handle register master request from 127.0.0.1:63268
+2017-12-21 16:07:27 Info Remote 127.0.0.1:63268, method GET, access /master
+2017-12-21 16:07:27 Info Remote 127.0.0.1:63268, method POST, access /test
+2017-12-21 16:09:22 Info =====Start CFG server=====
+2017-12-21 16:09:22 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-21 16:09:22 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-21 16:09:22 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-21 16:09:22 Info Field Field1: 12
+2017-12-21 16:09:22 Info Field Field2: abc
+2017-12-21 16:09:22 Info Add route "getCfgHandler"
+2017-12-21 16:09:22 Info Add route "cfgPingHandler"
+2017-12-21 16:09:22 Info Add route "getMasterHandler"
+2017-12-21 16:09:22 Info Add route "postMasterHandler"
+2017-12-21 16:09:22 Info Add route "testPost"
+2017-12-21 16:09:26 Info Remote 127.0.0.1:63722, method GET, access /ping
+2017-12-21 16:09:26 Info Remote 127.0.0.1:63722, method POST, access /master
+2017-12-21 16:09:26 Info Handle register master request from 127.0.0.1:63722
+2017-12-21 16:09:26 Info Remote 127.0.0.1:63722, method GET, access /master
+2017-12-21 16:09:26 Info Remote 127.0.0.1:63722, method POST, access /test
+2017-12-21 16:09:26 Info Get request body:
+{
+  "1": "a",
+  "2": "b"
+}
+
+2017-12-24 22:59:07 Info =====Start CFG server=====
+2017-12-24 22:59:07 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-24 22:59:07 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-24 22:59:07 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-24 22:59:07 Info Field Field1: 12
+2017-12-24 22:59:07 Info Field Field2: abc
+2017-12-24 22:59:07 Info Add route "getCfgHandler"
+2017-12-24 22:59:07 Info Add route "cfgPingHandler"
+2017-12-24 22:59:07 Info Add route "getMasterHandler"
+2017-12-24 22:59:07 Info Add route "postMasterHandler"
+2017-12-24 22:59:07 Info Add route "testPost"
+2017-12-24 22:59:16 Info Remote 127.0.0.1:63279, method GET, access /ping
+2017-12-24 22:59:16 Info Remote 127.0.0.1:63279, method POST, access /master
+2017-12-24 22:59:16 Info Handle register master request from 127.0.0.1:63279
+2017-12-24 22:59:16 Info Remote 127.0.0.1:63279, method GET, access /master
+2017-12-24 22:59:16 Info Remote 127.0.0.1:63279, method POST, access /test?key=12345
+2017-12-24 22:59:16 Info Get key as 12345
+2017-12-25 22:57:10 Info =====Start CFG server=====
+2017-12-25 22:57:10 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-25 22:57:10 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-25 22:57:10 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-25 22:57:10 Info Field Field1: 12
+2017-12-25 22:57:10 Info Field Field2: abc
+2017-12-25 22:57:10 Info Add route "getCfgHandler"
+2017-12-25 22:57:10 Info Add route "cfgPingHandler"
+2017-12-25 22:57:10 Info Add route "getMasterHandler"
+2017-12-25 22:57:10 Info Add route "postMasterHandler"
+2017-12-25 22:57:10 Info Add route "testPost"
+2017-12-25 22:57:14 Info Remote 127.0.0.1:57840, method GET, access /ping
+2017-12-25 22:57:14 Info Remote 127.0.0.1:57840, method POST, access /master
+2017-12-25 22:57:14 Info Handle register master request from 127.0.0.1:57840
+2017-12-25 22:57:14 Info Remote 127.0.0.1:57840, method GET, access /master
+2017-12-25 22:57:14 Info Remote 127.0.0.1:57840, method POST, access /test?key=12345
+2017-12-25 22:57:14 Info Get key as 12345
+2017-12-25 23:00:21 Info =====Start CFG server=====
+2017-12-25 23:00:21 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-25 23:00:21 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-25 23:00:21 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-25 23:00:21 Info Field Field1: 12
+2017-12-25 23:00:21 Info Field Field2: abc
+2017-12-25 23:00:21 Info Add route "getCfgHandler"
+2017-12-25 23:00:21 Info Add route "cfgPingHandler"
+2017-12-25 23:00:21 Info Add route "getMasterHandler"
+2017-12-25 23:00:21 Info Add route "postMasterHandler"
+2017-12-25 23:00:21 Info Add route "testPost"
+2017-12-25 23:00:24 Info Remote 127.0.0.1:58041, method GET, access /ping
+2017-12-25 23:00:24 Info Remote 127.0.0.1:58041, method POST, access /master
+2017-12-25 23:00:24 Info Handle register master request from 127.0.0.1:58041
+2017-12-25 23:00:24 Info Remote 127.0.0.1:58041, method GET, access /master
+2017-12-25 23:00:24 Info Remote 127.0.0.1:58041, method POST, access /test?key=12345
+2017-12-25 23:00:24 Info Get key as 12345
+2017-12-26 16:35:40 Info =====Start CFG server=====
+2017-12-26 16:35:40 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-26 16:35:40 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-26 16:35:40 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-26 16:35:40 Info Field Field1: 12
+2017-12-26 16:35:40 Info Field Field2: abc
+2017-12-26 16:35:40 Info Add route "getCfgHandler"
+2017-12-26 16:35:40 Info Add route "cfgPingHandler"
+2017-12-26 16:35:40 Info Add route "getMasterHandler"
+2017-12-26 16:35:40 Info Add route "postMasterHandler"
+2017-12-26 16:35:40 Info Add route "testPost"
+2017-12-26 16:35:40 Info Add route "echoIp"
+2017-12-26 16:35:47 Info Remote 127.0.0.1:62125, method GET, access /ping
+2017-12-26 16:35:47 Info Remote 127.0.0.1:62125, method POST, access /master
+2017-12-26 16:35:47 Info Handle register master request from 127.0.0.1:62125
+2017-12-26 16:35:47 Info Remote 127.0.0.1:62125, method GET, access /master
+2017-12-26 16:35:47 Info Remote 127.0.0.1:62125, method POST, access /test?key=12345
+2017-12-26 16:35:47 Info Get key as 12345
+2017-12-26 16:35:47 Info Remote 127.0.0.1:62125, method GET, access /echoip
+2017-12-26 21:05:09 Info =====Start CFG server=====
+2017-12-26 21:05:09 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-26 21:05:09 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-26 21:05:09 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-26 21:05:09 Info Field Field1: 12
+2017-12-26 21:05:09 Info Field Field2: abc
+2017-12-26 21:05:09 Info Add route "getCfgHandler"
+2017-12-26 21:05:09 Info Add route "cfgPingHandler"
+2017-12-26 21:05:09 Info Add route "getMasterHandler"
+2017-12-26 21:05:09 Info Add route "postMasterHandler"
+2017-12-26 21:05:09 Info Add route "testPost"
+2017-12-26 21:05:09 Info Add route "echoIp"
+2017-12-26 21:36:33 Info =====Start CFG server=====
+2017-12-26 21:36:33 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-26 21:36:33 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-26 21:36:33 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-26 21:36:33 Info Field Field1: 12
+2017-12-26 21:36:33 Info Field Field2: abc
+2017-12-26 21:36:33 Info Add route "getCfgHandler"
+2017-12-26 21:36:33 Info Add route "cfgPingHandler"
+2017-12-26 21:36:33 Info Add route "getMasterHandler"
+2017-12-26 21:36:33 Info Add route "postMasterHandler"
+2017-12-26 21:36:33 Info Add route "testPost"
+2017-12-26 21:36:33 Info Add route "echoIp"
+2017-12-26 21:36:43 Info Remote 127.0.0.1:54532, method GET, access /ping
+2017-12-26 21:36:43 Info Get ping from 127.0.0.1:54532
+2017-12-26 21:36:43 Info Remote 127.0.0.1:54532, method GET, access /echoip
+2017-12-26 21:36:43 Info Echo IP for 127.0.0.1:54532
+2017-12-26 21:36:43 Info Remote 127.0.0.1:54532, method POST, access /master
+2017-12-26 21:36:43 Info Handle register master request from 127.0.0.1:54533
+2017-12-26 21:39:07 Info Remote 127.0.0.1:54654, method GET, access /ping
+2017-12-26 21:39:07 Info Get ping from 127.0.0.1:54654
+2017-12-26 21:39:07 Info Remote 127.0.0.1:54654, method GET, access /echoip
+2017-12-26 21:39:07 Info Echo IP for 127.0.0.1:54654
+2017-12-26 21:39:07 Info Remote 127.0.0.1:54654, method POST, access /master
+2017-12-26 21:39:07 Info Handle register master request from 127.0.0.1:54655
+2017-12-26 21:40:57 Info Remote 127.0.0.1:54908, method GET, access /ping
+2017-12-26 21:40:57 Info Get ping from 127.0.0.1:54908
+2017-12-26 21:40:57 Info Remote 127.0.0.1:54908, method GET, access /echoip
+2017-12-26 21:40:57 Info Echo IP for 127.0.0.1:54908
+2017-12-26 21:40:57 Info Remote 127.0.0.1:54908, method POST, access /master
+2017-12-26 21:40:57 Info Handle register master request from 127.0.0.1:54909
+2017-12-26 21:41:14 Info =====Start CFG server=====
+2017-12-26 21:41:14 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-26 21:41:14 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-26 21:41:14 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-26 21:41:14 Info Field Field1: 12
+2017-12-26 21:41:14 Info Field Field2: abc
+2017-12-26 21:41:14 Info Add route "getCfgHandler"
+2017-12-26 21:41:14 Info Add route "cfgPingHandler"
+2017-12-26 21:41:14 Info Add route "getMasterHandler"
+2017-12-26 21:41:14 Info Add route "postMasterHandler"
+2017-12-26 21:41:14 Info Add route "testPost"
+2017-12-26 21:41:14 Info Add route "echoIp"
+2017-12-26 21:41:20 Info Remote 127.0.0.1:54919, method GET, access /ping
+2017-12-26 21:41:20 Info Get ping from 127.0.0.1:54919
+2017-12-26 21:41:20 Info Remote 127.0.0.1:54919, method GET, access /echoip
+2017-12-26 21:41:20 Info Echo IP for 127.0.0.1:54919
+2017-12-26 21:41:20 Info Remote 127.0.0.1:54919, method POST, access /master
+2017-12-26 21:41:20 Info Handle register master request from 127.0.0.1:54920
+2017-12-26 21:41:45 Info =====Start CFG server=====
+2017-12-26 21:41:45 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-26 21:41:45 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-26 21:41:45 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-26 21:41:45 Info Field Field1: 12
+2017-12-26 21:41:45 Info Field Field2: abc
+2017-12-26 21:41:45 Info Add route "getCfgHandler"
+2017-12-26 21:41:45 Info Add route "cfgPingHandler"
+2017-12-26 21:41:45 Info Add route "getMasterHandler"
+2017-12-26 21:41:45 Info Add route "postMasterHandler"
+2017-12-26 21:41:45 Info Add route "testPost"
+2017-12-26 21:41:45 Info Add route "echoIp"
+2017-12-26 21:41:56 Info Remote 127.0.0.1:54936, method GET, access /ping
+2017-12-26 21:41:56 Info Get ping from 127.0.0.1:54936
+2017-12-26 21:41:56 Info Remote 127.0.0.1:54936, method GET, access /echoip
+2017-12-26 21:41:56 Info Echo IP for 127.0.0.1:54936
+2017-12-26 21:41:56 Info Remote 127.0.0.1:54936, method POST, access /master
+2017-12-26 21:41:56 Info Handle register master request from 127.0.0.1:54937
+2017-12-28 09:54:43 Info Remote 127.0.0.1:56657, method GET, access /ping
+2017-12-28 09:54:43 Info Get ping from 127.0.0.1:56657
+2017-12-28 09:54:43 Info Remote 127.0.0.1:56657, method GET, access /echoip
+2017-12-28 09:54:43 Info Echo IP for 127.0.0.1:56657
+2017-12-28 09:54:43 Info Remote 127.0.0.1:56657, method POST, access /master
+2017-12-28 09:54:43 Info Handle register master request from 127.0.0.1:56658
+2017-12-28 09:54:48 Info =====Start CFG server=====
+2017-12-28 09:54:48 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-28 09:54:48 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-28 09:54:48 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-28 09:54:48 Info Field Field1: 12
+2017-12-28 09:54:48 Info Field Field2: abc
+2017-12-28 09:54:48 Info Add route "getCfgHandler"
+2017-12-28 09:54:48 Info Add route "cfgPingHandler"
+2017-12-28 09:54:48 Info Add route "getMasterHandler"
+2017-12-28 09:54:48 Info Add route "postMasterHandler"
+2017-12-28 09:54:48 Info Add route "testPost"
+2017-12-28 09:54:48 Info Add route "echoIp"
+2017-12-28 09:54:54 Info Remote 127.0.0.1:56667, method GET, access /ping
+2017-12-28 09:54:54 Info Get ping from 127.0.0.1:56667
+2017-12-28 09:54:54 Info Remote 127.0.0.1:56667, method GET, access /echoip
+2017-12-28 09:54:54 Info Echo IP for 127.0.0.1:56667
+2017-12-28 09:54:54 Info Remote 127.0.0.1:56667, method POST, access /master
+2017-12-28 09:54:54 Info Handle register master request from 127.0.0.1:56668
+2017-12-28 09:56:10 Info =====Start CFG server=====
+2017-12-28 09:56:10 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-28 09:56:10 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-28 09:56:10 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-28 09:56:10 Info Field Field1: 12
+2017-12-28 09:56:10 Info Field Field2: abc
+2017-12-28 09:56:10 Info Add route "getCfgHandler"
+2017-12-28 09:56:10 Info Add route "cfgPingHandler"
+2017-12-28 09:56:10 Info Add route "getMasterHandler"
+2017-12-28 09:56:10 Info Add route "postMasterHandler"
+2017-12-28 09:56:10 Info Add route "testPost"
+2017-12-28 09:56:10 Info Add route "echoIp"
+2017-12-28 09:56:12 Info Remote 127.0.0.1:56740, method GET, access /ping
+2017-12-28 09:56:12 Info Get ping from 127.0.0.1:56740
+2017-12-28 09:56:12 Info Remote 127.0.0.1:56740, method GET, access /echoip
+2017-12-28 09:56:12 Info Echo IP for 127.0.0.1:56740
+2017-12-28 09:56:12 Info Remote 127.0.0.1:56740, method POST, access /master
+2017-12-28 09:56:12 Info Handle register master request from 127.0.0.1:56741
+2017-12-28 09:57:48 Info =====Start CFG server=====
+2017-12-28 09:57:48 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-28 09:57:48 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-28 09:57:48 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-28 09:57:48 Info Field Field1: 12
+2017-12-28 09:57:48 Info Field Field2: abc
+2017-12-28 09:57:48 Info Add route "getCfgHandler"
+2017-12-28 09:57:48 Info Add route "cfgPingHandler"
+2017-12-28 09:57:48 Info Add route "getMasterHandler"
+2017-12-28 09:57:48 Info Add route "postMasterHandler"
+2017-12-28 09:57:48 Info Add route "testPost"
+2017-12-28 09:57:48 Info Add route "echoIp"
+2017-12-28 09:57:50 Info Remote 127.0.0.1:56799, method GET, access /ping
+2017-12-28 09:57:50 Info Get ping from 127.0.0.1:56799
+2017-12-28 09:57:50 Info Remote 127.0.0.1:56799, method GET, access /echoip
+2017-12-28 09:57:50 Info Echo IP for 127.0.0.1:56799
+2017-12-28 09:57:50 Info Remote 127.0.0.1:56799, method POST, access /master
+2017-12-28 09:57:50 Info Handle register master request from 127.0.0.1:56800
+2017-12-28 09:58:00 Info Remote 127.0.0.1:56805, method GET, access /ping
+2017-12-28 09:58:00 Info Get ping from 127.0.0.1:56805
+2017-12-28 09:58:00 Info Remote 127.0.0.1:56805, method GET, access /master
+2017-12-28 09:58:05 Info Remote 127.0.0.1:56805, method GET, access /master
+2017-12-28 09:58:10 Info Remote 127.0.0.1:56805, method GET, access /master
+2017-12-28 09:58:15 Info Remote 127.0.0.1:56805, method GET, access /master
+2017-12-28 09:58:20 Info Remote 127.0.0.1:56805, method GET, access /master
+2017-12-28 09:58:25 Info Remote 127.0.0.1:56805, method GET, access /master
+2017-12-28 10:09:25 Info =====Start CFG server=====
+2017-12-28 10:09:25 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-28 10:09:25 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-28 10:09:25 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-28 10:09:25 Info Field Field1: 12
+2017-12-28 10:09:25 Info Field Field2: abc
+2017-12-28 10:09:25 Info Add route "getCfgHandler"
+2017-12-28 10:09:25 Info Add route "cfgPingHandler"
+2017-12-28 10:09:25 Info Add route "getMasterHandler"
+2017-12-28 10:09:25 Info Add route "postMasterHandler"
+2017-12-28 10:09:25 Info Add route "testPost"
+2017-12-28 10:09:25 Info Add route "echoIp"
+2017-12-28 10:09:33 Info Remote 127.0.0.1:57124, method GET, access /ping
+2017-12-28 10:09:33 Info Get ping from 127.0.0.1:57124
+2017-12-28 10:09:33 Info Remote 127.0.0.1:57124, method GET, access /echoip
+2017-12-28 10:09:33 Info Echo IP for 127.0.0.1:57124
+2017-12-28 10:09:33 Info Remote 127.0.0.1:57124, method POST, access /master
+2017-12-28 10:09:33 Info Handle register master request from 127.0.0.1:57125
+2017-12-28 10:09:38 Info Remote 127.0.0.1:57130, method GET, access /ping
+2017-12-28 10:09:38 Info Get ping from 127.0.0.1:57130
+2017-12-28 10:09:38 Info Remote 127.0.0.1:57130, method GET, access /master
+2017-12-28 10:09:38 Info Get master addr as 127.0.0.1:57125
+2017-12-28 10:09:43 Info Remote 127.0.0.1:57130, method GET, access /master
+2017-12-28 10:09:43 Info Get master addr as 127.0.0.1:57125
+2017-12-28 10:09:48 Info Remote 127.0.0.1:57130, method GET, access /master
+2017-12-28 10:09:48 Info Get master addr as 127.0.0.1:57125
+2017-12-28 10:26:13 Info =====Start CFG server=====
+2017-12-28 10:26:13 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-28 10:26:13 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-28 10:26:13 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-28 10:26:13 Info Field Field1: 12
+2017-12-28 10:26:13 Info Field Field2: abc
+2017-12-28 10:26:13 Info Add route "getCfgHandler"
+2017-12-28 10:26:13 Info Add route "cfgPingHandler"
+2017-12-28 10:26:13 Info Add route "getMasterAddrHandler"
+2017-12-28 10:26:13 Info Add route "postMasterHandler"
+2017-12-28 10:26:13 Info Add route "testPost"
+2017-12-28 10:26:13 Info Add route "echoIp"
+2017-12-28 10:26:16 Info Remote 127.0.0.1:57592, method GET, access /ping
+2017-12-28 10:26:16 Info Get ping from 127.0.0.1:57592
+2017-12-28 10:26:16 Info Remote 127.0.0.1:57592, method GET, access /echoip
+2017-12-28 10:26:16 Info Echo IP for 127.0.0.1:57592
+2017-12-28 10:26:16 Info Remote 127.0.0.1:57592, method POST, access /master
+2017-12-28 10:26:16 Info Handle register master request as 127.0.0.1:57593
+2017-12-28 10:26:16 Info Register master as 127.0.0.1:57593
+2017-12-28 10:26:18 Info Remote 127.0.0.1:57598, method GET, access /ping
+2017-12-28 10:26:18 Info Get ping from 127.0.0.1:57598
+2017-12-28 10:26:18 Info Remote 127.0.0.1:57598, method GET, access /master
+2017-12-28 10:26:18 Info Get master addr as 127.0.0.1:57593
+2017-12-28 10:26:23 Info Remote 127.0.0.1:57598, method GET, access /master
+2017-12-28 10:26:23 Info Get master addr as 127.0.0.1:57593
+2017-12-28 10:27:47 Info Remote 127.0.0.1:57726, method GET, access /ping
+2017-12-28 10:27:47 Info Get ping from 127.0.0.1:57726
+2017-12-28 10:27:47 Info Remote 127.0.0.1:57726, method GET, access /master
+2017-12-28 10:27:47 Info Get master addr as 127.0.0.1:57593
+2017-12-28 10:31:15 Info Remote 127.0.0.1:57966, method GET, access /ping
+2017-12-28 10:31:15 Info Get ping from 127.0.0.1:57966
+2017-12-28 10:31:15 Info Remote 127.0.0.1:57966, method GET, access /master
+2017-12-28 10:31:15 Info Get master addr as 127.0.0.1:57593
+2017-12-28 10:31:15 Info Remote 127.0.0.1:57966, method GET, access /echoip
+2017-12-28 10:31:15 Info Echo IP for 127.0.0.1:57966
+2017-12-28 10:41:27 Info =====Start CFG server=====
+2017-12-28 10:41:27 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-28 10:41:27 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-28 10:41:27 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-28 10:41:27 Info Field Field1: 12
+2017-12-28 10:41:27 Info Field Field2: abc
+2017-12-28 10:41:27 Info Add route "getCfgHandler"
+2017-12-28 10:41:27 Info Add route "cfgPingHandler"
+2017-12-28 10:41:27 Info Add route "getMasterAddrHandler"
+2017-12-28 10:41:27 Info Add route "postMasterHandler"
+2017-12-28 10:41:27 Info Add route "testPost"
+2017-12-28 10:41:27 Info Add route "echoIp"
+2017-12-28 10:41:31 Info Remote 127.0.0.1:58462, method GET, access /ping
+2017-12-28 10:41:31 Info Get ping from 127.0.0.1:58462
+2017-12-28 10:41:31 Info Remote 127.0.0.1:58462, method GET, access /echoip
+2017-12-28 10:41:31 Info Echo IP for 127.0.0.1:58462
+2017-12-28 10:41:31 Info Remote 127.0.0.1:58462, method POST, access /master
+2017-12-28 10:41:31 Info Handle register master request as 127.0.0.1:58463
+2017-12-28 10:41:31 Info Register master as 127.0.0.1:58463
+2017-12-28 10:41:34 Info Remote 127.0.0.1:58468, method GET, access /ping
+2017-12-28 10:41:34 Info Get ping from 127.0.0.1:58468
+2017-12-28 10:41:34 Info Remote 127.0.0.1:58468, method GET, access /master
+2017-12-28 10:41:34 Info Get master addr as 127.0.0.1:58463
+2017-12-28 10:41:34 Info Remote 127.0.0.1:58468, method GET, access /echoip
+2017-12-28 10:41:34 Info Echo IP for 127.0.0.1:58468
+2017-12-28 10:52:24 Info =====Start CFG server=====
+2017-12-28 10:52:24 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-28 10:52:24 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-28 10:52:24 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-28 10:52:24 Info Field Field1: 12
+2017-12-28 10:52:24 Info Field Field2: abc
+2017-12-28 10:52:24 Info Add route "getCfgHandler"
+2017-12-28 10:52:24 Info Add route "cfgPingHandler"
+2017-12-28 10:52:24 Info Add route "getMasterAddrHandler"
+2017-12-28 10:52:24 Info Add route "postMasterHandler"
+2017-12-28 10:52:24 Info Add route "testPost"
+2017-12-28 10:52:24 Info Add route "echoIp"
+2017-12-28 10:52:27 Info Remote 127.0.0.1:58710, method GET, access /ping
+2017-12-28 10:52:27 Info Get ping from 127.0.0.1:58710
+2017-12-28 10:52:27 Info Remote 127.0.0.1:58710, method GET, access /echoip
+2017-12-28 10:52:27 Info Echo IP for 127.0.0.1:58710
+2017-12-28 10:52:27 Info Remote 127.0.0.1:58710, method POST, access /master
+2017-12-28 10:52:27 Info Handle register master request as 127.0.0.1:58711
+2017-12-28 10:52:27 Info Register master as 127.0.0.1:58711
+2017-12-28 10:52:30 Info Remote 127.0.0.1:58716, method GET, access /ping
+2017-12-28 10:52:30 Info Get ping from 127.0.0.1:58716
+2017-12-28 10:52:30 Info Remote 127.0.0.1:58716, method GET, access /master
+2017-12-28 10:52:30 Info Get master addr as 127.0.0.1:58711
+2017-12-28 10:52:30 Info Remote 127.0.0.1:58716, method GET, access /echoip
+2017-12-28 10:52:30 Info Echo IP for 127.0.0.1:58716
+2017-12-28 11:07:55 Info =====Start CFG server=====
+2017-12-28 11:07:55 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-28 11:07:55 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-28 11:07:55 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-28 11:07:55 Info Field Field1: 12
+2017-12-28 11:07:55 Info Field Field2: abc
+2017-12-28 11:07:55 Info Add route "getCfgHandler"
+2017-12-28 11:07:55 Info Add route "cfgPingHandler"
+2017-12-28 11:07:55 Info Add route "getMasterAddrHandler"
+2017-12-28 11:07:55 Info Add route "postMasterHandler"
+2017-12-28 11:07:55 Info Add route "testPost"
+2017-12-28 11:07:55 Info Add route "echoIp"
+2017-12-28 11:07:58 Info Remote 127.0.0.1:59265, method GET, access /ping
+2017-12-28 11:07:58 Info Get ping from 127.0.0.1:59265
+2017-12-28 11:07:58 Info Remote 127.0.0.1:59265, method GET, access /echoip
+2017-12-28 11:07:58 Info Echo IP for 127.0.0.1:59265
+2017-12-28 11:07:58 Info Remote 127.0.0.1:59265, method POST, access /master
+2017-12-28 11:07:58 Info Handle register master request as 127.0.0.1:59266
+2017-12-28 11:07:58 Info Register master as 127.0.0.1:59266
+2017-12-28 11:08:01 Info Remote 127.0.0.1:59271, method GET, access /ping
+2017-12-28 11:08:01 Info Get ping from 127.0.0.1:59271
+2017-12-28 11:08:01 Info Remote 127.0.0.1:59271, method GET, access /master
+2017-12-28 11:08:01 Info Get master addr as 127.0.0.1:59266
+2017-12-28 11:08:01 Info Remote 127.0.0.1:59271, method GET, access /echoip
+2017-12-28 11:08:01 Info Echo IP for 127.0.0.1:59271
+2017-12-28 11:09:42 Info =====Start CFG server=====
+2017-12-28 11:09:42 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-28 11:09:42 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-28 11:09:42 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-28 11:09:42 Info Field Field1: 12
+2017-12-28 11:09:42 Info Field Field2: abc
+2017-12-28 11:09:42 Info Add route "getCfgHandler"
+2017-12-28 11:09:42 Info Add route "cfgPingHandler"
+2017-12-28 11:09:42 Info Add route "getMasterAddrHandler"
+2017-12-28 11:09:42 Info Add route "postMasterHandler"
+2017-12-28 11:09:42 Info Add route "testPost"
+2017-12-28 11:09:42 Info Add route "echoIp"
+2017-12-28 11:09:45 Info Remote 127.0.0.1:59456, method GET, access /ping
+2017-12-28 11:09:45 Info Get ping from 127.0.0.1:59456
+2017-12-28 11:09:45 Info Remote 127.0.0.1:59456, method GET, access /echoip
+2017-12-28 11:09:45 Info Echo IP for 127.0.0.1:59456
+2017-12-28 11:09:45 Info Remote 127.0.0.1:59456, method POST, access /master
+2017-12-28 11:09:45 Info Handle register master request as 127.0.0.1:59457
+2017-12-28 11:09:45 Info Register master as 127.0.0.1:59457
+2017-12-28 11:09:47 Info Remote 127.0.0.1:59462, method GET, access /ping
+2017-12-28 11:09:47 Info Get ping from 127.0.0.1:59462
+2017-12-28 11:09:47 Info Remote 127.0.0.1:59462, method GET, access /master
+2017-12-28 11:09:47 Info Get master addr as 127.0.0.1:59457
+2017-12-28 11:09:47 Info Remote 127.0.0.1:59462, method GET, access /echoip
+2017-12-28 11:09:47 Info Echo IP for 127.0.0.1:59462
+2017-12-28 11:11:35 Info =====Start CFG server=====
+2017-12-28 11:11:35 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-28 11:11:35 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-28 11:11:35 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-28 11:11:35 Info Field Field1: 12
+2017-12-28 11:11:35 Info Field Field2: abc
+2017-12-28 11:11:35 Info Add route "getCfgHandler"
+2017-12-28 11:11:35 Info Add route "cfgPingHandler"
+2017-12-28 11:11:35 Info Add route "getMasterAddrHandler"
+2017-12-28 11:11:35 Info Add route "postMasterHandler"
+2017-12-28 11:11:35 Info Add route "testPost"
+2017-12-28 11:11:35 Info Add route "echoIp"
+2017-12-28 11:11:38 Info Remote 127.0.0.1:59490, method GET, access /ping
+2017-12-28 11:11:38 Info Get ping from 127.0.0.1:59490
+2017-12-28 11:11:38 Info Remote 127.0.0.1:59490, method GET, access /echoip
+2017-12-28 11:11:38 Info Echo IP for 127.0.0.1:59490
+2017-12-28 11:11:38 Info Remote 127.0.0.1:59490, method POST, access /master
+2017-12-28 11:11:38 Info Handle register master request as 127.0.0.1:59491
+2017-12-28 11:11:38 Info Register master as 127.0.0.1:59491
+2017-12-28 11:11:40 Info Remote 127.0.0.1:59496, method GET, access /ping
+2017-12-28 11:11:40 Info Get ping from 127.0.0.1:59496
+2017-12-28 11:11:40 Info Remote 127.0.0.1:59496, method GET, access /master
+2017-12-28 11:11:40 Info Get master addr as 127.0.0.1:59491
+2017-12-28 11:11:40 Info Remote 127.0.0.1:59496, method GET, access /echoip
+2017-12-28 11:11:40 Info Echo IP for 127.0.0.1:59496
+2017-12-28 15:55:07 Info =====Start CFG server=====
+2017-12-28 15:55:07 Info Register cfg entry pegasus.dummypkg.Dummy
+2017-12-28 15:55:07 Info Load cfg pegasus.dummypkg.Dummy from file content
+2017-12-28 15:55:07 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2017-12-28 15:55:07 Info Field Field1: 12
+2017-12-28 15:55:07 Info Field Field2: abc
+2017-12-28 15:55:07 Info Add route "getCfgHandler"
+2017-12-28 15:55:07 Info Add route "cfgPingHandler"
+2017-12-28 15:55:07 Info Add route "getMasterAddrHandler"
+2017-12-28 15:55:07 Info Add route "postMasterHandler"
+2017-12-28 15:55:07 Info Add route "testPost"
+2017-12-28 15:55:07 Info Add route "echoIp"
+2017-12-28 15:55:09 Info Remote 127.0.0.1:62976, method GET, access /ping
+2017-12-28 15:55:09 Info Get ping from 127.0.0.1:62976
+2017-12-28 15:55:09 Info Remote 127.0.0.1:62976, method GET, access /echoip
+2017-12-28 15:55:09 Info Echo IP for 127.0.0.1:62976
+2017-12-28 15:55:09 Info Remote 127.0.0.1:62976, method POST, access /master
+2017-12-28 15:55:09 Info Handle register master request as 127.0.0.1:62977
+2017-12-28 15:55:09 Info Register master as 127.0.0.1:62977
+2017-12-28 15:55:12 Info Remote 127.0.0.1:62982, method GET, access /ping
+2017-12-28 15:55:12 Info Get ping from 127.0.0.1:62982
+2017-12-28 15:55:12 Info Remote 127.0.0.1:62982, method GET, access /master
+2017-12-28 15:55:12 Info Get master addr as 127.0.0.1:62977
+2017-12-28 15:55:12 Info Remote 127.0.0.1:62982, method GET, access /echoip
+2017-12-28 15:55:12 Info Echo IP for 127.0.0.1:62982
+2017-12-28 15:56:45 Info Remote 127.0.0.1:63000, method GET, access /ping
+2017-12-28 15:56:45 Info Get ping from 127.0.0.1:63000
+2017-12-28 15:56:45 Info Remote 127.0.0.1:63000, method GET, access /master
+2017-12-28 15:56:45 Info Get master addr as 127.0.0.1:62977
+2017-12-28 15:56:45 Info Remote 127.0.0.1:63000, method GET, access /echoip
+2017-12-28 15:56:45 Info Echo IP for 127.0.0.1:63000
+2018-01-03 15:44:32 Info =====Start CFG server=====
+2018-01-03 15:44:32 Info Register cfg entry pegasus.dummypkg.Dummy
+2018-01-03 15:44:32 Info Load cfg pegasus.dummypkg.Dummy from file content
+2018-01-03 15:44:32 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2018-01-03 15:44:32 Info Field Field1: 12
+2018-01-03 15:44:32 Info Field Field2: abc
+2018-01-03 15:44:32 Info Add route "getCfgHandler"
+2018-01-03 15:44:32 Info Add route "cfgPingHandler"
+2018-01-03 15:44:32 Info Add route "getMasterAddrHandler"
+2018-01-03 15:44:32 Info Add route "postMasterHandler"
+2018-01-03 15:44:32 Info Add route "testPost"
+2018-01-03 15:44:32 Info Add route "echoIp"
+2018-01-03 15:44:48 Info Remote 127.0.0.1:60496, method GET, access /ping
+2018-01-03 15:44:48 Info Get ping from 127.0.0.1:60496
+2018-01-03 15:44:48 Info Remote 127.0.0.1:60496, method GET, access /echoip
+2018-01-03 15:44:48 Info Echo IP for 127.0.0.1:60496
+2018-01-03 15:44:48 Info Remote 127.0.0.1:60496, method POST, access /master
+2018-01-03 15:44:48 Info Handle register master request as 127.0.0.1:60497
+2018-01-03 15:44:48 Info Register master as 127.0.0.1:60497
+2018-01-03 15:46:08 Info =====Start CFG server=====
+2018-01-03 15:46:08 Info Register cfg entry pegasus.dummypkg.Dummy
+2018-01-03 15:46:08 Info Load cfg pegasus.dummypkg.Dummy from file content
+2018-01-03 15:46:08 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2018-01-03 15:46:08 Info Field Field1: 12
+2018-01-03 15:46:08 Info Field Field2: abc
+2018-01-03 15:46:08 Info Add route "getCfgHandler"
+2018-01-03 15:46:08 Info Add route "cfgPingHandler"
+2018-01-03 15:46:08 Info Add route "getMasterAddrHandler"
+2018-01-03 15:46:08 Info Add route "postMasterHandler"
+2018-01-03 15:46:08 Info Add route "testPost"
+2018-01-03 15:46:08 Info Add route "echoIp"
+2018-01-03 15:46:10 Info Remote 127.0.0.1:60630, method GET, access /ping
+2018-01-03 15:46:10 Info Get ping from 127.0.0.1:60630
+2018-01-03 15:46:10 Info Remote 127.0.0.1:60630, method GET, access /echoip
+2018-01-03 15:46:10 Info Echo IP for 127.0.0.1:60630
+2018-01-03 15:46:10 Info Remote 127.0.0.1:60630, method POST, access /master
+2018-01-03 15:46:10 Info Handle register master request as 127.0.0.1:60631
+2018-01-03 15:46:10 Info Register master as 127.0.0.1:60631
+2018-01-03 15:46:49 Info Remote 127.0.0.1:60642, method GET, access /ping
+2018-01-03 15:46:49 Info Get ping from 127.0.0.1:60642
+2018-01-03 15:46:49 Info Remote 127.0.0.1:60642, method GET, access /master
+2018-01-03 15:46:49 Info Get master addr as 127.0.0.1:60631
+2018-01-03 15:46:49 Info Remote 127.0.0.1:60642, method GET, access /echoip
+2018-01-03 15:46:49 Info Echo IP for 127.0.0.1:60642
+2018-01-03 15:49:24 Info =====Start CFG server=====
+2018-01-03 15:49:24 Info Register cfg entry pegasus.dummypkg.Dummy
+2018-01-03 15:49:24 Info Load cfg pegasus.dummypkg.Dummy from file content
+2018-01-03 15:49:24 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2018-01-03 15:49:24 Info Field Field1: 12
+2018-01-03 15:49:24 Info Field Field2: abc
+2018-01-03 15:49:24 Info Add route "getCfgHandler"
+2018-01-03 15:49:24 Info Add route "cfgPingHandler"
+2018-01-03 15:49:24 Info Add route "getMasterAddrHandler"
+2018-01-03 15:49:24 Info Add route "postMasterHandler"
+2018-01-03 15:49:24 Info Add route "testPost"
+2018-01-03 15:49:24 Info Add route "echoIp"
+2018-01-03 15:49:26 Info Remote 127.0.0.1:60812, method GET, access /ping
+2018-01-03 15:49:26 Info Get ping from 127.0.0.1:60812
+2018-01-03 15:49:26 Info Remote 127.0.0.1:60812, method GET, access /echoip
+2018-01-03 15:49:26 Info Echo IP for 127.0.0.1:60812
+2018-01-03 15:49:26 Info Remote 127.0.0.1:60812, method POST, access /master
+2018-01-03 15:49:26 Info Handle register master request as 127.0.0.1:60813
+2018-01-03 15:49:26 Info Register master as 127.0.0.1:60813
+2018-01-03 15:49:30 Info Remote 127.0.0.1:60818, method GET, access /ping
+2018-01-03 15:49:30 Info Get ping from 127.0.0.1:60818
+2018-01-03 15:49:30 Info Remote 127.0.0.1:60818, method GET, access /master
+2018-01-03 15:49:30 Info Get master addr as 127.0.0.1:60813
+2018-01-03 15:49:30 Info Remote 127.0.0.1:60818, method GET, access /echoip
+2018-01-03 15:49:30 Info Echo IP for 127.0.0.1:60818
+2018-01-03 15:50:53 Info =====Start CFG server=====
+2018-01-03 15:50:53 Info Register cfg entry pegasus.dummypkg.Dummy
+2018-01-03 15:50:53 Info Load cfg pegasus.dummypkg.Dummy from file content
+2018-01-03 15:50:53 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2018-01-03 15:50:53 Info Field Field1: 12
+2018-01-03 15:50:53 Info Field Field2: abc
+2018-01-03 15:50:53 Info Add route "getCfgHandler"
+2018-01-03 15:50:53 Info Add route "cfgPingHandler"
+2018-01-03 15:50:53 Info Add route "getMasterAddrHandler"
+2018-01-03 15:50:53 Info Add route "postMasterHandler"
+2018-01-03 15:50:53 Info Add route "testPost"
+2018-01-03 15:50:53 Info Add route "echoIp"
+2018-01-03 15:50:55 Info Remote 127.0.0.1:60893, method GET, access /ping
+2018-01-03 15:50:55 Info Get ping from 127.0.0.1:60893
+2018-01-03 15:50:55 Info Remote 127.0.0.1:60893, method GET, access /echoip
+2018-01-03 15:50:55 Info Echo IP for 127.0.0.1:60893
+2018-01-03 15:50:55 Info Remote 127.0.0.1:60893, method POST, access /master
+2018-01-03 15:50:55 Info Handle register master request as 127.0.0.1:60894
+2018-01-03 15:50:55 Info Register master as 127.0.0.1:60894
+2018-01-03 15:50:58 Info Remote 127.0.0.1:60899, method GET, access /ping
+2018-01-03 15:50:58 Info Get ping from 127.0.0.1:60899
+2018-01-03 15:50:58 Info Remote 127.0.0.1:60899, method GET, access /master
+2018-01-03 15:50:58 Info Get master addr as 127.0.0.1:60894
+2018-01-03 15:50:58 Info Remote 127.0.0.1:60899, method GET, access /echoip
+2018-01-03 15:50:58 Info Echo IP for 127.0.0.1:60899
+2018-01-03 16:08:27 Info =====Start CFG server=====
+2018-01-03 16:08:27 Info Register cfg entry pegasus.dummypkg.Dummy
+2018-01-03 16:08:27 Info Load cfg pegasus.dummypkg.Dummy from file content
+2018-01-03 16:08:27 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2018-01-03 16:08:27 Info Field Field1: 12
+2018-01-03 16:08:27 Info Field Field2: abc
+2018-01-03 16:08:27 Info Add route "getCfgHandler"
+2018-01-03 16:08:27 Info Add route "cfgPingHandler"
+2018-01-03 16:08:27 Info Add route "getMasterAddrHandler"
+2018-01-03 16:08:27 Info Add route "postMasterHandler"
+2018-01-03 16:08:27 Info Add route "testPost"
+2018-01-03 16:08:27 Info Add route "echoIp"
+2018-01-03 16:08:29 Info Remote 127.0.0.1:60975, method GET, access /ping
+2018-01-03 16:08:29 Info Get ping from 127.0.0.1:60975
+2018-01-03 16:08:29 Info Remote 127.0.0.1:60975, method GET, access /echoip
+2018-01-03 16:08:29 Info Echo IP for 127.0.0.1:60975
+2018-01-03 16:08:29 Info Remote 127.0.0.1:60975, method POST, access /master
+2018-01-03 16:08:29 Info Handle register master request as 127.0.0.1:60976
+2018-01-03 16:08:29 Info Register master as 127.0.0.1:60976
+2018-01-03 16:08:30 Info Remote 127.0.0.1:60981, method GET, access /ping
+2018-01-03 16:08:30 Info Get ping from 127.0.0.1:60981
+2018-01-03 16:08:30 Info Remote 127.0.0.1:60981, method GET, access /master
+2018-01-03 16:08:30 Info Get master addr as 127.0.0.1:60976
+2018-01-03 16:08:30 Info Remote 127.0.0.1:60981, method GET, access /echoip
+2018-01-03 16:08:30 Info Echo IP for 127.0.0.1:60981
+2018-01-03 21:20:38 Info =====Start CFG server=====
+2018-01-03 21:20:38 Info Register cfg entry pegasus.dummypkg.Dummy
+2018-01-03 21:20:38 Info Load cfg pegasus.dummypkg.Dummy from file content
+2018-01-03 21:20:38 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2018-01-03 21:20:38 Info Field Field1: 12
+2018-01-03 21:20:38 Info Field Field2: abc
+2018-01-03 21:20:38 Info Add route "getCfgHandler"
+2018-01-03 21:20:38 Info Add route "cfgPingHandler"
+2018-01-03 21:20:38 Info Add route "getMasterAddrHandler"
+2018-01-03 21:20:38 Info Add route "postMasterHandler"
+2018-01-03 21:20:38 Info Add route "testPost"
+2018-01-03 21:20:38 Info Add route "echoIp"
+2018-01-03 21:20:42 Info Remote 127.0.0.1:49488, method GET, access /ping
+2018-01-03 21:20:42 Info Get ping from 127.0.0.1:49488
+2018-01-03 21:20:42 Info Remote 127.0.0.1:49488, method GET, access /echoip
+2018-01-03 21:20:42 Info Echo IP for 127.0.0.1:49488
+2018-01-03 21:20:42 Info Remote 127.0.0.1:49488, method POST, access /master
+2018-01-03 21:20:42 Info Handle register master request as 127.0.0.1:49489
+2018-01-03 21:20:42 Info Register master as 127.0.0.1:49489
+2018-01-03 21:20:46 Info Remote 127.0.0.1:49494, method GET, access /ping
+2018-01-03 21:20:46 Info Get ping from 127.0.0.1:49494
+2018-01-03 21:20:46 Info Remote 127.0.0.1:49494, method GET, access /master
+2018-01-03 21:20:46 Info Get master addr as 127.0.0.1:49489
+2018-01-03 21:20:46 Info Remote 127.0.0.1:49494, method GET, access /echoip
+2018-01-03 21:20:46 Info Echo IP for 127.0.0.1:49494
+2018-01-03 21:24:05 Info =====Start CFG server=====
+2018-01-03 21:24:05 Info Register cfg entry pegasus.dummypkg.Dummy
+2018-01-03 21:24:05 Info Load cfg pegasus.dummypkg.Dummy from file content
+2018-01-03 21:24:05 Info path pegasus.dummypkg.Dummy, cfg entry Dummy, kind struct
+2018-01-03 21:24:05 Info Field Field1: 12
+2018-01-03 21:24:05 Info Field Field2: abc
+2018-01-03 21:24:05 Info Add route "getCfgHandler"
+2018-01-03 21:24:05 Info Add route "cfgPingHandler"
+2018-01-03 21:24:05 Info Add route "getMasterAddrHandler"
+2018-01-03 21:24:05 Info Add route "postMasterHandler"
+2018-01-03 21:24:05 Info Add route "testPost"
+2018-01-03 21:24:05 Info Add route "echoIp"
+2018-01-03 21:24:07 Info Remote 127.0.0.1:49745, method GET, access /ping
+2018-01-03 21:24:07 Info Get ping from 127.0.0.1:49745
+2018-01-03 21:24:07 Info Remote 127.0.0.1:49745, method GET, access /echoip
+2018-01-03 21:24:07 Info Echo IP for 127.0.0.1:49745
+2018-01-03 21:24:07 Info Remote 127.0.0.1:49745, method POST, access /master
+2018-01-03 21:24:07 Info Handle register master request as 127.0.0.1:49746
+2018-01-03 21:24:07 Info Register master as 127.0.0.1:49746
+2018-01-03 21:24:09 Info Remote 127.0.0.1:49751, method GET, access /ping
+2018-01-03 21:24:09 Info Get ping from 127.0.0.1:49751
+2018-01-03 21:24:09 Info Remote 127.0.0.1:49751, method GET, access /master
+2018-01-03 21:24:09 Info Get master addr as 127.0.0.1:49746
+2018-01-03 21:24:09 Info Remote 127.0.0.1:49751, method GET, access /echoip
+2018-01-03 21:24:09 Info Echo IP for 127.0.0.1:49751

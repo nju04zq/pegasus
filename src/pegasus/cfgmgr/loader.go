@@ -5,17 +5,10 @@ import (
 	"fmt"
 	"os"
 	"pegasus/log"
+	"pegasus/uri"
 	"pegasus/util"
 	"reflect"
 	"strings"
-	"time"
-)
-
-const (
-	CfgServerPort = 10086
-	CfgUriRoot    = "/cfg/"
-	PingUri       = "/ping"
-	PingResp      = "Pong"
 )
 
 const (
@@ -226,7 +219,7 @@ func PullCfg(ip string, c interface{}) error {
 	if v.Kind() != reflect.Ptr {
 		return fmt.Errorf("Should pass in pointer")
 	}
-	uri := fmt.Sprintf("%s%s", CfgUriRoot, composeCfgEntryPath(v))
+	uri := fmt.Sprintf("%s%s", uri.CfgUriRoot, composeCfgEntryPath(v))
 	url := &util.HttpUrl{
 		IP:   ip,
 		Port: CfgServerPort,
@@ -242,37 +235,4 @@ func PullCfg(ip string, c interface{}) error {
 		return err
 	}
 	return nil
-}
-
-func pingCfgServer(ip string) error {
-	url := &util.HttpUrl{
-		IP:   ip,
-		Port: CfgServerPort,
-		Uri:  PingUri,
-	}
-	s, err := util.HttpGet(url)
-	if err != nil {
-		log.Info("Fail to ping %s, %v", url.String(), err)
-		return err
-	}
-	if s != PingResp {
-		return fmt.Errorf("Ping failed, get %q, expect %q", s, PingResp)
-	}
-	log.Info("Ping cfg server %s succeed!", ip)
-	return nil
-}
-
-func WaitForCfgServerUp(ip string) {
-	sleepTime, maxSleepTime := time.Second, 32*time.Second
-	for {
-		if err := pingCfgServer(ip); err == nil {
-			return
-		}
-		log.Info("Cfg server not up, wait for %v to retry", sleepTime)
-		time.Sleep(sleepTime)
-		sleepTime *= 2
-		if sleepTime > maxSleepTime {
-			sleepTime = maxSleepTime
-		}
-	}
 }

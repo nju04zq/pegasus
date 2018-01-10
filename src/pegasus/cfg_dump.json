@@ -1,0 +1,6 @@
+{
+  "pegasus/dummypkg.Dummy": {
+    "Field1": 12,
+    "Field2": "abc"
+  }
+}
