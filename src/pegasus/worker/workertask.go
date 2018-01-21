@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"pegasus/log"
 	"pegasus/server"
 	"pegasus/task"
+	"pegasus/taskreg"
+	"pegasus/uri"
 	"pegasus/util"
 	"sync"
 )
@@ -14,9 +17,9 @@ import (
 var tskctx = &TaskCtx{}
 
 const (
-	BUF_TASKLET_CNT     = 8
-	RUNNING_TASKLET_CNT = 4
-	TASKLET_RETRY_CNT   = 3
+	BUF_TASKLET_CNT      = 8
+	RUNNING_EXECUTOR_CNT = 4
+	TASKLET_MAX_RETRY    = 3
 )
 
 type TaskCtx struct {
@@ -33,7 +36,8 @@ type TaskCtx struct {
 
 func (ctx *TaskCtx) init() {
 	ctx.todoTasklets = make(chan task.Tasklet, BUF_TASKLET_CNT)
-	ctx.doneTasklets = make(chan task.Tasklet)
+	ctx.doneTasklets = make(chan task.Tasklet, ctx.tsk.CalcTaskletCnt())
+	ctx.taskletCtxList = make([]task.TaskletCtx, 0)
 	ctx.err = nil
 }
 
@@ -53,42 +57,57 @@ func (ctx *TaskCtx) setErr(err error) {
 	ctx.err = err
 }
 
-func (ctx *TaskCtx) checkAndSetFree() error {
+func (ctx *TaskCtx) checkAndUnsetFree(tsk task.Task) error {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 	if !ctx.free {
 		return fmt.Errorf("Worker busy with task %q", ctx.tsk.GetTaskKind())
 	}
 	ctx.free = false
+	ctx.tsk = tsk
 	return nil
 }
 
+func (ctx *TaskCtx) setFree() {
+	log.Info("Set worker free")
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	ctx.free = true
+	ctx.tsk = nil
+}
+
 func getTaskletCnt() int {
-	return RUNNING_TASKLET_CNT
+	return RUNNING_EXECUTOR_CNT
 }
 
 func prepareExecutors(ctx *TaskCtx, tsk task.Task) {
 	taskletCnt := getTaskletCnt()
-	for i := 0; i <= taskletCnt; i++ {
+	for i := 0; i < taskletCnt; i++ {
 		c := tsk.NewTaskletCtx()
 		ctx.wgFinish.Add(1)
-		go taskletExecutor(ctx, c)
+		go taskletExecutor(i, ctx, c)
 		ctx.taskletCtxList = append(ctx.taskletCtxList, c)
 	}
 }
 
 func releaseExecutors(ctx *TaskCtx) {
+	log.Info("Release all executors' ctx")
 	for _, c := range ctx.taskletCtxList {
 		c.Close()
 	}
 }
 
-func handleTaskReq(tspec *task.TaskSpec) {
+func waitForTaskDone(ctx *TaskCtx) {
+	log.Info("Wait for task %q done", ctx.tsk.GetTaskId())
+	tskctx.wgFinish.Wait()
+}
+
+func handleTaskReq(tsk task.Task) {
+	log.Info("Dealing with task %q", tsk.GetTaskId())
 	tskctx.init()
-	tsk := spawnTask(tspec)
 	prepareExecutors(tskctx, tsk)
 	assignTasklets(tskctx, tsk)
-	tskctx.wgFinish.Wait()
+	waitForTaskDone(tskctx)
 	releaseExecutors(tskctx)
 	if tskctx.aborted() {
 		tsk.SetError(tskctx.err)
@@ -96,36 +115,32 @@ func handleTaskReq(tspec *task.TaskSpec) {
 		reduceTasklets(tsk, tskctx)
 	}
 	report := task.GenerateTaskReport(tsk)
-	sendTaskReport(report)
-}
-
-func spawnTask(tspec *task.TaskSpec) task.Task {
-	gen := task.GetTaskGenerator(tspec.Kind)
-	if gen == nil {
-		return nil
-	}
-	return gen(tspec)
+	tskctx.setFree()
+	go sendTaskReport(report)
 }
 
 func assignTasklets(ctx *TaskCtx, tsk task.Task) {
 	log.Info("Assign tasklets")
+	i := 0
 	for {
 		if ctx.aborted() {
 			log.Info("Abort assign tasklets")
 			break
 		}
-		tasklet := tsk.GetNextTasklet()
+		taskletid := fmt.Sprintf("%s-%d", tsk.GetTaskId(), i)
+		tasklet := tsk.GetNextTasklet(taskletid)
 		if tasklet == nil {
 			close(ctx.todoTasklets)
 			break
 		}
 		log.Info("Put tasklet %q to todo list", tasklet.GetTaskletId())
 		ctx.todoTasklets <- tasklet
+		i++
 	}
 	log.Info("Assign tasklets finished")
 }
 
-func taskletExecutor(ctx *TaskCtx, c task.TaskletCtx) {
+func taskletExecutor(eid int, ctx *TaskCtx, c task.TaskletCtx) {
 	var err error
 	defer ctx.wgFinish.Done()
 	for {
@@ -133,17 +148,20 @@ func taskletExecutor(ctx *TaskCtx, c task.TaskletCtx) {
 			log.Info("Error set in taskctx, abort executor")
 			break
 		}
+		log.Info("Executor #%d, retrieve todo tasklet...", eid)
 		tasklet, ok := <-ctx.todoTasklets
 		if !ok {
 			log.Info("Todo tasklets drained, exit executor")
 			break
 		}
-		for i := 0; i < TASKLET_RETRY_CNT; i++ {
+		log.Info("Executor #%d execute tasklet %q", eid, tasklet.GetTaskletId())
+		for i := 0; i < TASKLET_MAX_RETRY; i++ {
 			if err = tasklet.Execute(c); err == nil {
 				break
 			}
 			log.Info("Retry execute tasklet %q", tasklet.GetTaskletId())
 		}
+		log.Info("Executor #%d execute tasklet %q done", eid, tasklet.GetTaskletId())
 		if err != nil {
 			log.Info("Fail on tasklet %q, err %v", tasklet.GetTaskletId(), err)
 			tskctx.setErr(err)
@@ -151,9 +169,11 @@ func taskletExecutor(ctx *TaskCtx, c task.TaskletCtx) {
 		}
 		ctx.doneTasklets <- tasklet
 	}
+	log.Info("Executor #%d, exit", eid)
 }
 
 func reduceTasklets(tsk task.Task, ctx *TaskCtx) {
+	log.Info("Reduce tasklets for task %q", tsk.GetTaskId())
 	close(ctx.doneTasklets)
 	for {
 		tasklet, ok := <-ctx.doneTasklets
@@ -165,13 +185,20 @@ func reduceTasklets(tsk task.Task, ctx *TaskCtx) {
 }
 
 func sendTaskReport(report *task.TaskReport) {
-	url := &util.HttpUrl{
-		//TODO
-		IP:   "",
-		Port: 0,
-		Uri:  "",
+	log.Info("Send out task report for %q", report.Tid)
+	u := &util.HttpUrl{
+		IP:   workerSelf.masterIp,
+		Port: workerSelf.masterPort,
+		Uri:  uri.MasterWorkerTaskReportUri,
 	}
-	util.HttpPostData(url, report)
+	u.Query = make(url.Values)
+	u.Query.Add(uri.MasterWorkerQueryKey, workerSelf.Key)
+	if _, err := util.HttpPostData(u, report); err == nil {
+		log.Info("Send out task report for %q done", report.Tid)
+	} else {
+		// TODO need retry on error
+		log.Error("Send out task report for %q failed, %v", report.Tid, err)
+	}
 }
 
 func makeTaskspec(r *http.Request) (tspec *task.TaskSpec, err error) {
@@ -180,6 +207,7 @@ func makeTaskspec(r *http.Request) (tspec *task.TaskSpec, err error) {
 		err = fmt.Errorf("Fail to read request body, %v", err)
 		return
 	}
+	log.Info("Get task spec:\n%s", string(buf))
 	tspec = new(task.TaskSpec)
 	if err = json.Unmarshal(buf, tspec); err != nil {
 		err = fmt.Errorf("Fail unmarshal tspec %s, %v", string(buf), err)
@@ -188,20 +216,44 @@ func makeTaskspec(r *http.Request) (tspec *task.TaskSpec, err error) {
 	return
 }
 
+func spawnTask(tspec *task.TaskSpec) (task.Task, error) {
+	gen := taskreg.GetTaskGenerator(tspec.Kind)
+	if gen == nil {
+		return nil, fmt.Errorf("Task %q not supported", tspec.Kind)
+	}
+	tsk, err := gen(tspec, RUNNING_EXECUTOR_CNT)
+	if err != nil {
+		return nil, err
+	}
+	log.Info("Spawn task %q done", tsk.GetTaskId())
+	return tsk, nil
+}
+
 func taskRecepiant(tspec *task.TaskSpec) error {
-	if err := tskctx.checkAndSetFree(); err != nil {
+	tsk, err := spawnTask(tspec)
+	if err != nil {
 		return err
 	}
-	go handleTaskReq(tspec)
+	if err := tskctx.checkAndUnsetFree(tsk); err != nil {
+		return err
+	}
+	go handleTaskReq(tsk)
 	return nil
 }
 
 func taskRecipiantHandler(w http.ResponseWriter, r *http.Request) {
 	tspec, err := makeTaskspec(r)
 	if err != nil {
+		log.Info("Fail to make task spec, %v", err)
 		server.FmtResp(w, err, "")
 		return
 	}
-	err = taskRecepiant(tspec)
+	if err = taskRecepiant(tspec); err != nil {
+		log.Info("Can't recieve task %q, %v", tspec.Tid, err)
+	}
 	server.FmtResp(w, err, "")
+}
+
+func init() {
+	tskctx.free = true
 }

@@ -133,16 +133,23 @@ func registerRoutes() {
 		Handler: workerHbIntervalHandler,
 	})
 	route.RegisterRoute(&route.Route{
+		Name:    "taskReportHandler",
+		Method:  http.MethodPost,
+		Path:    uri.MasterWorkerTaskReportUri,
+		Handler: taskReportHandler,
+	})
+	route.RegisterRoute(&route.Route{
 		Name:    "testHandler",
 		Method:  http.MethodPost,
 		Path:    uri.MasterTestUri,
 		Handler: testHandler,
 	})
-}
-
-func initCtx() error {
-	initJobCtx()
-	return nil
+	route.RegisterRoute(&route.Route{
+		Name:    "testRunHandler",
+		Method:  http.MethodGet,
+		Path:    uri.MasterTestUri,
+		Handler: testRunHandler,
+	})
 }
 
 func initLogger() error {
@@ -166,9 +173,6 @@ func main() {
 		panic(err)
 	}
 	if err := registerOnCfgServer(); err != nil {
-		panic(err)
-	}
-	if err := initCtx(); err != nil {
 		panic(err)
 	}
 	panic(masterSelf.masterServer.Serve())

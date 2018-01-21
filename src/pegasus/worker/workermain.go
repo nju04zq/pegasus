@@ -135,7 +135,7 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 func registerRoutes() {
 	route.RegisterRoute(&route.Route{
 		Name:    "taskRecipiantHandler",
-		Method:  http.MethodGet,
+		Method:  http.MethodPost,
 		Path:    uri.WorkerTaskUri,
 		Handler: taskRecipiantHandler,
 	})

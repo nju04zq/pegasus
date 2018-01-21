@@ -26,6 +26,7 @@ const (
 	WORKER_MONITOR_INTERVAL = time.Duration(30 * time.Second)
 	WORKER_HB_CNT_GOOD      = 5
 	WORKER_HB_CNT_NORM      = 3
+	WORKER_MAX_FAULT        = 2
 )
 
 var wmgr = new(workerMgr)
@@ -122,8 +123,11 @@ func (mgr *workerMgr) verifyWorker(addr, key string) (err error) {
 	}
 	worker.Addr, worker.ip, worker.port = addr, ip, port
 	worker.StatusStart = time.Now()
-	mgr.insertWorker(worker, &mgr.unstableWorkers)
-	worker.Status = WORKER_STATUS_UNSTABLE
+	// TODO
+	//mgr.insertWorker(worker, &mgr.unstableWorkers)
+	//worker.Status = WORKER_STATUS_UNSTABLE
+	mgr.insertWorker(worker, &mgr.freeWorkers)
+	worker.Status = WORKER_STATUS_ACTIVE
 	return nil
 }
 
@@ -141,6 +145,12 @@ func (mgr *workerMgr) insertWorker(worker *Worker, head **Worker) {
 	if head == &mgr.freeWorkers {
 		mgr.cond.Broadcast()
 	}
+}
+
+func (mgr *workerMgr) insertWorkerInlock(worker *Worker, head **Worker) {
+	mgr.mutex.Lock()
+	defer mgr.mutex.Unlock()
+	mgr.insertWorker(worker, head)
 }
 
 func (mgr *workerMgr) removeFrom(worker *Worker, head **Worker) {
@@ -170,43 +180,110 @@ func (mgr *workerMgr) removeFirstOneFrom(head **Worker) *Worker {
 	return worker
 }
 
+func (mgr *workerMgr) waitForFreeWorker() error {
+	for mgr.freeWorkers == nil {
+		mgr.cond.Wait()
+		// TODO should we keep track of avail workers count???
+		if len(mgr.workers) == 0 {
+			return fmt.Errorf("No workers registered or all workers dead")
+		}
+	}
+	return nil
+}
+
+func (mgr *workerMgr) notifyFreeWorker() {
+	mgr.cond.Broadcast()
+}
+
 func (mgr *workerMgr) getFreeWorker() (*Worker, error) {
 	log.Info("Get free worker...")
 	mgr.mutex.Lock()
 	defer mgr.mutex.Unlock()
 	if len(mgr.workers) == 0 {
-		return nil, fmt.Errorf("No workers registered")
+		return nil, fmt.Errorf("No workers registered or all workers dead")
 	}
-	for mgr.freeWorkers == nil {
-		mgr.cond.Wait()
+	if err := mgr.waitForFreeWorker(); err != nil {
+		return nil, err
 	}
 	worker := mgr.removeFirstOneFrom(&mgr.freeWorkers)
 	return worker, nil
 }
 
-func (mgr *workerMgr) dispatchTask(t *task.TaskSpec) error {
-	log.Info("Dispatch task %q", t.Tid)
-	worker, err := mgr.getFreeWorker()
-	if err != nil {
-		return fmt.Errorf("Fail to get free worker, %v", err)
-	}
+func (mgr *workerMgr) dispatchTaskTo(t *task.TaskSpec, w *Worker) error {
+	log.Info("Post task %q to worker %v", t.Tid, w.Key)
 	url := &util.HttpUrl{
-		IP:   worker.ip,
-		Port: worker.port,
-		Uri:  uri.CfgMasterUri,
+		IP:   w.ip,
+		Port: w.port,
+		Uri:  uri.WorkerTaskUri,
 	}
 	if _, err := util.HttpPostData(url, t); err != nil {
-		return fmt.Errorf("Fail to post task spec to %q, %v", worker.Addr, err)
+		return fmt.Errorf("Fail to post task spec to %q, %v", w.Addr, err)
 	}
-	log.Info("Dispatch task %q successfully", t.Tid)
+	w.tspec = t
+	log.Info("Post task %q done", t.Tid)
 	return nil
 }
 
-func (mgr *workerMgr) releaseWorker() {
-
+func (mgr *workerMgr) dispatchTask(t *task.TaskSpec) (string, error) {
+	var err error
+	var w *Worker
+	log.Info("Dispatch task %q", t.Tid)
+	for {
+		w, err = mgr.getFreeWorker()
+		if err != nil {
+			return "", fmt.Errorf("Fail to get free worker, %v", err)
+		}
+		if err := mgr.dispatchTaskTo(t, w); err == nil {
+			mgr.insertWorkerInlock(w, &mgr.busyWorkers)
+			break
+		} else {
+			log.Error("Fail to dispatch task to %q, %v", w.Key, err)
+		}
+		w.Status = WORKER_STATUS_UNSTABLE
+		mgr.insertWorkerInlock(w, &mgr.unstableWorkers)
+	}
+	log.Info("Dispatch task %q successfully to %s", t.Tid, w.Addr)
+	return w.Addr, nil
 }
 
-func (mgr *workerMgr) handleTaskReport(ctx *JobCtx, addr string, report *task.TaskReport) error {
+func (mgr *workerMgr) releaseWorker(w *Worker) (logMsg string) {
+	w.tspec = nil
+	if w.FaultCnt >= WORKER_MAX_FAULT {
+		w.Status = WORKER_STATUS_FAULT
+		// TODO should we remove it???
+		mgr.reinsertWorker(w, &mgr.faultWorkers)
+		logMsg = fmt.Sprintf("Woker %q fault %d, move to fault queue", w.Key, w.FaultCnt)
+	} else if w.Status == WORKER_STATUS_UNSTABLE {
+		w.Status = WORKER_STATUS_UNSTABLE
+		mgr.reinsertWorker(w, &mgr.unstableWorkers)
+		logMsg = fmt.Sprintf("Worker %q released to unstable queue", w.Key)
+	} else {
+		w.Status = WORKER_STATUS_ACTIVE
+		mgr.reinsertWorker(w, &mgr.freeWorkers)
+		logMsg = fmt.Sprintf("Worker %q released to free queue", w.Key)
+	}
+	mgr.notifyFreeWorker()
+	return
+}
+
+func (mgr *workerMgr) handleTaskReport(ctx *JobCtx, key string, report *task.TaskReport) error {
+	var logMsg string
+	log.Info("Handle task report %q from %q, report err, %v", report.Tid, key, report.Err)
+	mgr.mutex.Lock()
+	defer func() {
+		mgr.mutex.Unlock()
+		log.Info("Hanlde task report %q result: %s", report.Tid, logMsg)
+	}()
+	w, ok := mgr.workers[key]
+	if !ok {
+		return fmt.Errorf("Worker with key %q not found", key)
+	}
+	if report.Err != "" {
+		w.FaultCnt++
+	} else {
+		w.doneTasks++
+	}
+	logMsg = mgr.releaseWorker(w)
 	return nil
 }
 
@@ -295,6 +372,7 @@ func monitorGoodWorker(w *Worker) *monitorRec {
 	w.Status = WORKER_STATUS_ACTIVE
 	if w.tspec == nil {
 		wmgr.reinsertWorker(w, &wmgr.freeWorkers)
+		wmgr.notifyFreeWorker()
 	}
 	return rec
 }
@@ -312,6 +390,7 @@ func monitorBadWorker(w *Worker) *monitorRec {
 		}
 		w.Status, w.tspec = WORKER_STATUS_DEAD, nil
 		wmgr.reinsertWorker(w, &wmgr.deadWorkers)
+		wmgr.notifyFreeWorker()
 	} else {
 		return nil
 	}
