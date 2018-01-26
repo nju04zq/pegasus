@@ -2,6 +2,7 @@ package util
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -107,4 +108,15 @@ func (t *PrettyTable) formatLine(buf *bytes.Buffer, line []string) {
 		buf.WriteString(fmt.Sprintf("%*s", -t.colMaxWidth[i], col))
 	}
 	buf.WriteByte('\n')
+}
+
+func FitDataInto(data interface{}, v interface{}) error {
+	buf, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(buf, v); err != nil {
+		return err
+	}
+	return nil
 }

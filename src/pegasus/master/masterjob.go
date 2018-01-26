@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"pegasus/log"
-	"pegasus/mergesort/mergesortjobs"
+	"pegasus/mergesort"
 	"pegasus/server"
 	"pegasus/task"
 	"pegasus/util"
@@ -24,12 +24,6 @@ type TaskStats struct {
 	total      int
 	disptached int
 	done       int
-}
-
-func (stats *TaskStats) reset() {
-	stats.disptached = 0
-	stats.done = 0
-	stats.total = 0
 }
 
 type TaskMeta struct {
@@ -53,23 +47,29 @@ type JobCtx struct {
 	mutex     sync.Mutex
 	err       error
 	taskMetas map[string]*TaskMeta
-	taskStats TaskStats
+	taskStats *TaskStats
 }
 
 func (ctx *JobCtx) reset() {
 	log.Info("Reset job ctx")
 	jobctx.finish = make(chan struct{})
 	jobctx.todoTasks = make(chan *task.TaskSpec, BUF_TASK_CNT)
-	jobctx.reassignedTasks = make(chan *task.TaskSpec)
+	jobctx.reassignedTasks = make(chan *task.TaskSpec, BUF_TASK_CNT)
 	jobctx.taskMetas = make(map[string]*TaskMeta)
-	ctx.taskStats.reset()
+	ctx.taskStats = new(TaskStats)
 }
 
-func (ctx *JobCtx) assignJob(job task.Job) {
-	job.Init()
+func (ctx *JobCtx) assignJob(job task.Job) error {
+	log.Info("Assign and init job %q", job.GetDesc())
+	if err := job.Init(); err != nil {
+		err = fmt.Errorf("Fail to init job %q, %v", job.GetDesc(), err)
+		log.Error(err.Error())
+		return err
+	}
 	ctx.curJob = job
 	ctx.taskStats.total = job.CalcTaskCnt()
 	log.Info("Total task count %d", jobctx.taskStats.total)
+	return nil
 }
 
 func (ctx *JobCtx) setErr(err error) {
@@ -171,7 +171,6 @@ func (ctx *JobCtx) incDone() {
 }
 
 func taskReportHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO handle preprocess in a more graceful manner
 	key, err := getWorkerKeyFromReq(r)
 	if err != nil {
 		log.Error("Fail to get worker key, %v", err)
@@ -253,8 +252,9 @@ func taskDispatcher(ctx *JobCtx) {
 }
 
 func assignTasks(ctx *JobCtx, job task.Job) error {
+	idx := 0
 	for {
-		tid := generateTid()
+		tid := generateTid(idx)
 		tspec := job.GetNextTask(tid)
 		if tspec == nil {
 			break
@@ -267,6 +267,7 @@ func assignTasks(ctx *JobCtx, job task.Job) error {
 		case <-ctx.finish:
 			return fmt.Errorf("Abort assign task, %v", ctx.err)
 		}
+		idx++
 	}
 	return nil
 }
@@ -295,15 +296,20 @@ func waitForJobDone(ctx *JobCtx) error {
 	return ctx.err
 }
 
-func generateTid() string {
-	return fmt.Sprintf("tsk-%d", time.Now().UnixNano())
+func generateTid(idx int) string {
+	return fmt.Sprintf("tsk-%d-%d", time.Now().UnixNano(), idx)
 }
 
-func reduceTasks(ctx *JobCtx) {
+func reduceTasks(ctx *JobCtx) error {
 	log.Info("Reduce tasks for job")
 	for _, m := range ctx.taskMetas {
-		ctx.curJob.ReduceTask(m.report)
+		err := ctx.curJob.ReduceTask(m.report)
+		if err != nil {
+			log.Error("Fail to reduce task, %v", err)
+			return err
+		}
 	}
+	return nil
 }
 
 func feedNextJobs(job task.Job) {
@@ -318,20 +324,29 @@ func runJob(job task.Job) error {
 	log.Info("Running job %q", job.GetDesc())
 	jobctx.reset()
 	go taskDispatcher(jobctx)
-	jobctx.assignJob(job)
+	if err := jobctx.assignJob(job); err != nil {
+		return err
+	}
 	if err := assignTasks(jobctx, job); err != nil {
 		return err
 	}
 	if err := waitForJobDone(jobctx); err != nil {
 		return err
 	}
-	reduceTasks(jobctx)
+	if err := reduceTasks(jobctx); err != nil {
+		return err
+	}
 	feedNextJobs(job)
 	log.Info("Run job %q done", job.GetDesc())
 	return nil
 }
 
 func testRunHandler(w http.ResponseWriter, r *http.Request) {
-	err := runJob(new(mergesortjobs.RandInts))
-	server.FmtResp(w, err, nil)
+	job := new(mergesort.RandInts)
+	if err := runJob(job); err != nil {
+		log.Info("Run job %q error %v", job.GetDesc(), err)
+		server.FmtResp(w, err, nil)
+	} else {
+		server.FmtResp(w, nil, job.GetOutput())
+	}
 }

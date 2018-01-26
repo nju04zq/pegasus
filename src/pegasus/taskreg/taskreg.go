@@ -1,7 +1,7 @@
 package taskreg
 
 import (
-	"pegasus/mergesort/mergesortjobs"
+	"pegasus/mergesort"
 	"pegasus/task"
 )
 
@@ -21,5 +21,5 @@ func GetTaskGenerator(kind string) task.TaskGenerator {
 }
 
 func init() {
-	registerTask(mergesortjobs.TaskKind, mergesortjobs.TaskGenRandInts)
+	registerTask(mergesort.RANDINTS_TASK_KIND, mergesort.TaskGenRandInts)
 }

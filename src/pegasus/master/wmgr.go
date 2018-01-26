@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"pegasus/log"
@@ -123,7 +124,7 @@ func (mgr *workerMgr) verifyWorker(addr, key string) (err error) {
 	}
 	worker.Addr, worker.ip, worker.port = addr, ip, port
 	worker.StatusStart = time.Now()
-	// TODO
+	// TODO for test purpose
 	//mgr.insertWorker(worker, &mgr.unstableWorkers)
 	//worker.Status = WORKER_STATUS_UNSTABLE
 	mgr.insertWorker(worker, &mgr.freeWorkers)
@@ -171,22 +172,39 @@ func (mgr *workerMgr) reinsertWorker(worker *Worker, head **Worker) {
 	mgr.insertWorker(worker, head)
 }
 
-func (mgr *workerMgr) removeFirstOneFrom(head **Worker) *Worker {
-	worker := (*head).next
-	if (*head).next == (*head).prev {
-		*head = nil
+func (mgr *workerMgr) dumpWorkerList(head *Worker) {
+	buf := bytes.NewBuffer(nil)
+	w := head
+	for w != nil {
+		buf.WriteString(fmt.Sprintf("%q -> ", w.Key))
+		w = w.next
+		if w == head {
+			break
+		}
 	}
-	worker.listHead = nil
+	log.Info("workers: %s", buf.String())
+}
+
+func (mgr *workerMgr) removeFirstOneFrom(head **Worker) *Worker {
+	worker := *head
+	if worker.next == worker {
+		*head = nil
+	} else {
+		*head = worker.next
+		worker.next.prev = worker.prev
+		worker.prev.next = worker.next
+	}
+	worker.next, worker.prev, worker.listHead = nil, nil, nil
 	return worker
 }
 
 func (mgr *workerMgr) waitForFreeWorker() error {
 	for mgr.freeWorkers == nil {
-		mgr.cond.Wait()
 		// TODO should we keep track of avail workers count???
 		if len(mgr.workers) == 0 {
 			return fmt.Errorf("No workers registered or all workers dead")
 		}
+		mgr.cond.Wait()
 	}
 	return nil
 }
@@ -272,7 +290,7 @@ func (mgr *workerMgr) handleTaskReport(ctx *JobCtx, key string, report *task.Tas
 	mgr.mutex.Lock()
 	defer func() {
 		mgr.mutex.Unlock()
-		log.Info("Hanlde task report %q result: %s", report.Tid, logMsg)
+		log.Info("Handle task report %q result: %s", report.Tid, logMsg)
 	}()
 	w, ok := mgr.workers[key]
 	if !ok {
@@ -294,6 +312,8 @@ func (mgr *workerMgr) updateWorkerHb(key string, ts time.Time) (err error) {
 		mgr.mutex.Unlock()
 		log.Info("Update HB for worker %q done, err %v", key, err)
 	}()
+	// TODO
+	log.Info("update hb in lock")
 	w, ok := mgr.workers[key]
 	if !ok {
 		err = fmt.Errorf("Worker with key %q not found", key)
@@ -386,7 +406,7 @@ func monitorBadWorker(w *Worker) *monitorRec {
 		}
 	} else if w.Status == WORKER_STATUS_UNSTABLE {
 		if w.tspec != nil {
-			reassignTask(w.tspec)
+			go reassignTask(w.tspec)
 		}
 		w.Status, w.tspec = WORKER_STATUS_DEAD, nil
 		wmgr.reinsertWorker(w, &wmgr.deadWorkers)
@@ -431,8 +451,11 @@ func monitorOneWorker(w *Worker) *monitorRec {
 }
 
 func monitorWorkers() []*monitorRec {
+	log.Info("Monitor workers")
 	wmgr.mutex.Lock()
 	defer wmgr.mutex.Unlock()
+	// TODO
+	log.Info("Monitor workers in lock")
 	recs := make([]*monitorRec, 0)
 	keys := make([]string, len(wmgr.workers))
 	i := 0
@@ -453,6 +476,7 @@ func wmgrMonitorMain(args interface{}) {
 	t1 := time.Now()
 	recs := monitorWorkers()
 	t2 := time.Now()
+	log.Info("WMGR monitor done")
 	tbl := new(util.PrettyTable)
 	tbl.Init([]string{"Key", "Addr", "From", "To"})
 	for _, rec := range recs {

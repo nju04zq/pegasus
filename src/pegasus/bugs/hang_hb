@@ -1,0 +1,143 @@
+2018-01-23 21:54:08 Info Update HB for worker "1516715503404656756-0"
+2018-01-23 21:54:08 Info Update HB for worker "1516715503404656756-0" done, err <nil>
+2018-01-23 21:54:09 Info Start WMGR monitor
+2018-01-23 21:54:09 Info WMGR monitor took 3.394µs, records:
+Key  Addr  From  To
+-------------------
+
+2018-01-23 21:54:13 Info Remote 127.0.0.1:63352, method POST, access /worker/heartbeat
+?key=1516715503404656756-0
+2018-01-23 21:54:13 Info Update HB for worker "1516715503404656756-0"
+2018-01-23 21:54:13 Info Update HB for worker "1516715503404656756-0" done, err <nil>
+2018-01-23 21:54:18 Info Remote 127.0.0.1:63352, method POST, access /worker/heartbeat
+?key=1516715503404656756-0
+2018-01-23 21:54:39 Info Start WMGR monitor
+2018-01-23 21:54:58 Info monitor, reinsert "1516715503404656756-0"
+2018-01-23 21:54:58 Info Update HB for worker "1516715503404656756-0"
+2018-01-23 21:54:58 Info Update HB for worker "1516715503404656756-0" done, err <nil>
+2018-01-23 21:54:58 Info WMGR monitor took 28.222µs, records:
+Key                    Addr             From    To
+--------------------------------------------------------
+1516715503404656756-0  127.0.0.1:63351  Active  Unstable
+
+2018-01-23 21:54:58 Info Remote 127.0.0.1:63352, method POST, access /worker/heartbeat?key=1516715503404656756-0
+2018-01-23 21:54:58 Info Update HB for worker "1516715503404656756-0"
+2018-01-23 21:54:58 Info Update HB for worker "1516715503404656756-0" done, err <nil>
+2018-01-23 21:55:03 Info Remote 127.0.0.1:63352, method POST, access /worker/heartbeat
+?key=1516715503404656756-0
+2018-01-23 21:55:03 Info Update HB for worker "1516715503404656756-0"
+2018-01-23 21:55:03 Info Update HB for worker "1516715503404656756-0" done, err <nil>
+
+2018-01-23 21:55:08 Info Remote 127.0.0.1:63352, method POST, access /worker/heartbeat
+?key=1516715503404656756-0
+2018-01-23 21:55:08 Info Update HB for worker "1516715503404656756-0"
+2018-01-23 21:55:08 Info Update HB for worker "1516715503404656756-0" done, err <nil>
+2018-01-23 21:55:09 Info Start WMGR monitor
+2018-01-23 21:55:09 Info WMGR monitor took 3.248µs, records:
+Key  Addr  From  To
+-------------------
+
+
+
+2018-01-23 21:54:03 Info Post heartbeat successfully
+2018-01-23 21:54:08 Info Post heartbeat successfully
+2018-01-23 21:54:13 Info Post heartbeat successfully
+2018-01-23 21:54:58 Info Post heartbeat successfully
+2018-01-23 21:54:58 Info Post heartbeat successfully
+2018-01-23 21:55:03 Info Post heartbeat successfully
+2018-01-23 21:55:08 Info Post heartbeat successfully
+2018-01-23 21:55:13 Info Post heartbeat successfully
+2018-01-23 21:55:18 Info Post heartbeat successfully
+2018-01-23 21:55:23 Info Post heartbeat successfully
+2018-01-23 21:55:28 Info Post heartbeat successfully
+2018-01-23 21:55:33 Info Post heartbeat successfully
+
+
+
+
+
+2018-01-24 21:12:30 Info Start WMGR monitor
+2018-01-24 21:12:30 Info WMGR monitor done
+2018-01-24 21:12:30 Info WMGR monitor took 11.895µs, records:
+Key                    Addr             From  To
+-----------------------------------------------------
+1516799438236064416-1  127.0.0.1:56587  Dead  Removed
+
+2018-01-24 21:12:31 Info Remote 127.0.0.1:56577, method POST, access /worker/heartbeat?
+key=1516799436085904434-0
+2018-01-24 21:12:31 Info Update HB for worker "1516799436085904434-0"
+2018-01-24 21:12:31 Info Update HB for worker "1516799436085904434-0" done, err <nil>
+2018-01-24 21:12:36 Info Remote 127.0.0.1:56577, method POST, access /worker/heartbeat?
+key=1516799436085904434-0
+2018-01-24 21:12:36 Info Update HB for worker "1516799436085904434-0"
+2018-01-24 21:12:36 Info Update HB for worker "1516799436085904434-0" done, err <nil>
+2018-01-24 21:12:41 Info Remote 127.0.0.1:56577, method POST, access /worker/heartbeat?
+key=1516799436085904434-0
+2018-01-24 21:12:41 Info Update HB for worker "1516799436085904434-0"
+2018-01-24 21:13:00 Info Start WMGR monitor
+2018-01-24 21:15:09 Info WMGR monitor done
+2018-01-24 21:15:09 Info Update HB for worker "1516799436085904434-0" done, err <nil>
+2018-01-24 21:15:09 Info WMGR monitor took 2.395µs, records:
+Key  Addr  From  To
+-------------------
+
+2018-01-24 21:15:09 Info Start WMGR monitor
+2018-01-24 21:15:09 Info WMGR monitor done
+2018-01-24 21:15:09 Info WMGR monitor took 1.476µs, records:
+Key                    Addr             From    To
+--------------------------------------------------------
+1516799436085904434-0  127.0.0.1:56576  Active  Unstable
+
+2018-01-24 21:15:09 Info Remote 127.0.0.1:56577, method POST, access /worker/heartbeat?
+key=1516799436085904434-0
+2018-01-24 21:15:09 Info Update HB for worker "1516799436085904434-0"
+2018-01-24 21:15:09 Info Update HB for worker "1516799436085904434-0" done, err <nil>
+2018-01-24 21:15:14 Info Remote 127.0.0.1:56577, method POST, access /worker/heartbeat?
+key=1516799436085904434-0
+2018-01-24 21:15:14 Info Update HB for worker "1516799436085904434-0"
+2018-01-24 21:15:14 Info Update HB for worker "1516799436085904434-0" done, err <nil>
+2018-01-24 21:15:19 Info Remote 127.0.0.1:56577, method POST, access /worker/heartbeat?
+key=1516799436085904434-0
+2018-01-24 21:15:19 Info Update HB for worker "1516799436085904434-0"
+2018-01-24 21:15:19 Info Update HB for worker "1516799436085904434-0" done, err <nil>
+2018-01-24 21:15:24 Info Remote 127.0.0.1:56577, method POST, access /worker/heartbeat?
+key=1516799436085904434-0
+2018-01-24 21:15:24 Info Update HB for worker "1516799436085904434-0"
+2018-01-24 21:15:24 Info Update HB for worker "1516799436085904434-0" done, err <nil>
+2018-01-24 21:15:29 Info Remote 127.0.0.1:56577, method POST, access /worker/heartbeat?
+key=1516799436085904434-0
+2018-01-24 21:15:29 Info Update HB for worker "1516799436085904434-0"
+2018-01-24 21:15:29 Info Update HB for worker "1516799436085904434-0" done, err <nil>
+2018-01-24 21:15:34 Info Remote 127.0.0.1:56577, method POST, access /worker/heartbeat?
+key=1516799436085904434-0
+2018-01-24 21:15:34 Info Update HB for worker "1516799436085904434-0"
+2018-01-24 21:15:34 Info Update HB for worker "1516799436085904434-0" done, err <nil>
+2018-01-24 21:15:39 Info Start WMGR monitor
+2018-01-24 21:15:39 Info WMGR monitor done
+2018-01-24 21:15:39 Info WMGR monitor took 5.938µs, records:
+Key                    Addr             From      To
+--------------------------------------------------------
+1516799436085904434-0  127.0.0.1:56576  Unstable  Active
+
+
+2018-01-24 21:12:31 Info Post heartbeat...
+2018-01-24 21:12:31 Info Post heartbeat successfully
+2018-01-24 21:12:36 Info Post heartbeat...
+2018-01-24 21:12:36 Info Post heartbeat successfully
+2018-01-24 21:12:41 Info Post heartbeat...
+2018-01-24 21:15:09 Info Post heartbeat successfully
+2018-01-24 21:15:09 Info Post heartbeat...
+2018-01-24 21:15:09 Info Post heartbeat successfully
+2018-01-24 21:15:14 Info Post heartbeat...
+2018-01-24 21:15:14 Info Post heartbeat successfully
+2018-01-24 21:15:19 Info Post heartbeat...
+2018-01-24 21:15:19 Info Post heartbeat successfully
+2018-01-24 21:15:24 Info Post heartbeat...
+2018-01-24 21:15:24 Info Post heartbeat successfully
+2018-01-24 21:15:29 Info Post heartbeat...
+2018-01-24 21:15:29 Info Post heartbeat successfully
+2018-01-24 21:15:34 Info Post heartbeat...
+2018-01-24 21:15:34 Info Post heartbeat successfully
+2018-01-24 21:15:39 Info Post heartbeat...
+2018-01-24 21:15:39 Info Post heartbeat successfully
+

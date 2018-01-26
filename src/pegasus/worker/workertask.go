@@ -35,8 +35,10 @@ type TaskCtx struct {
 }
 
 func (ctx *TaskCtx) init() {
+	taskletCnt := ctx.tsk.GetTaskletCnt()
+	log.Info("Task %q tasklet count %d", ctx.tsk.GetTaskId(), taskletCnt)
 	ctx.todoTasklets = make(chan task.Tasklet, BUF_TASKLET_CNT)
-	ctx.doneTasklets = make(chan task.Tasklet, ctx.tsk.CalcTaskletCnt())
+	ctx.doneTasklets = make(chan task.Tasklet, taskletCnt)
 	ctx.taskletCtxList = make([]task.TaskletCtx, 0)
 	ctx.err = nil
 }
@@ -104,11 +106,16 @@ func waitForTaskDone(ctx *TaskCtx) {
 
 func handleTaskReq(tsk task.Task) {
 	log.Info("Dealing with task %q", tsk.GetTaskId())
-	tskctx.init()
-	prepareExecutors(tskctx, tsk)
-	assignTasklets(tskctx, tsk)
-	waitForTaskDone(tskctx)
-	releaseExecutors(tskctx)
+	if err := tsk.Init(RUNNING_EXECUTOR_CNT); err == nil {
+		tskctx.init()
+		prepareExecutors(tskctx, tsk)
+		assignTasklets(tskctx, tsk)
+		waitForTaskDone(tskctx)
+		releaseExecutors(tskctx)
+	} else {
+		log.Error("Fail to init task %q, %v", tsk.GetTaskId(), err)
+		tskctx.setErr(err)
+	}
 	if tskctx.aborted() {
 		tsk.SetError(tskctx.err)
 	} else {
@@ -145,13 +152,13 @@ func taskletExecutor(eid int, ctx *TaskCtx, c task.TaskletCtx) {
 	defer ctx.wgFinish.Done()
 	for {
 		if ctx.aborted() {
-			log.Info("Error set in taskctx, abort executor")
+			log.Info("Error set in taskctx, abort executor #%d", eid)
 			break
 		}
 		log.Info("Executor #%d, retrieve todo tasklet...", eid)
 		tasklet, ok := <-ctx.todoTasklets
 		if !ok {
-			log.Info("Todo tasklets drained, exit executor")
+			log.Info("Todo tasklets drained, exit executor #%d", eid)
 			break
 		}
 		log.Info("Executor #%d execute tasklet %q", eid, tasklet.GetTaskletId())
@@ -221,7 +228,7 @@ func spawnTask(tspec *task.TaskSpec) (task.Task, error) {
 	if gen == nil {
 		return nil, fmt.Errorf("Task %q not supported", tspec.Kind)
 	}
-	tsk, err := gen(tspec, RUNNING_EXECUTOR_CNT)
+	tsk, err := gen(tspec)
 	if err != nil {
 		return nil, err
 	}

@@ -12,13 +12,13 @@ type Project interface {
 
 type Job interface {
 	AppendInput(input interface{})
-	Init()
+	Init() error
 	GetStartTs() time.Time
 	GetEndTs() time.Time
 	GetDesc() string
 	CalcTaskCnt() int
 	GetNextTask(tid string) *TaskSpec
-	ReduceTask(*TaskReport)
+	ReduceTask(*TaskReport) error
 	GetOutput() interface{}
 	GetNextJobs() []Job
 	GetTaskGen() TaskGenerator
@@ -35,16 +35,6 @@ type TaskSpec struct {
 	Spec interface{}
 }
 
-type TaskReport struct {
-	Err     string
-	Tid     string
-	Kind    string
-	StartTs time.Time
-	EndTs   time.Time
-	Desc    string
-	Output  interface{}
-}
-
 func DecodeSpec(tspec *TaskSpec, subspec interface{}) error {
 	buf, err := json.Marshal(tspec.Spec)
 	if err != nil {
@@ -56,16 +46,17 @@ func DecodeSpec(tspec *TaskSpec, subspec interface{}) error {
 	return nil
 }
 
-type TaskGenerator func(tspec *TaskSpec, executorCnt int) (Task, error)
+type TaskGenerator func(tspec *TaskSpec) (Task, error)
 
 type Task interface {
+	Init(int) error
 	NewTaskletCtx() TaskletCtx
 	GetTaskId() string
 	GetTaskKind() string
 	GetStartTs() time.Time
 	GetEndTs() time.Time
 	GetDesc() string
-	CalcTaskletCnt() int
+	GetTaskletCnt() int
 	GetNextTasklet(string) Tasklet
 	ReduceTasklet(Tasklet)
 	SetError(error)
@@ -82,6 +73,16 @@ type Tasklet interface {
 
 type TaskletCtx interface {
 	Close()
+}
+
+type TaskReport struct {
+	Err     string
+	Tid     string
+	Kind    string
+	StartTs time.Time
+	EndTs   time.Time
+	Desc    string
+	Output  interface{}
 }
 
 func GenerateTaskReport(tsk Task) *TaskReport {

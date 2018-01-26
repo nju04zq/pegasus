@@ -1,37 +1,37 @@
-package mergesortjobs
+package mergesort
 
 import (
 	"math/rand"
-	"pegasus/log"
 	"pegasus/task"
+	"pegasus/util"
 	"time"
 )
 
 const (
-	taskSegments = 1
-	TaskKind     = "randints"
-	RandIntMin   = 1
-	RandIntMax   = 100
+	GEN_SEGMENTS       = 4
+	RANDINTS_TASK_KIND = "randints"
+	MIN_INT            = 1
+	MAX_INT            = 100
 )
 
 type RandInts struct {
-	seed        int64
-	tskIndex    int
-	tskSegments int
-	startTs     time.Time
-	endTs       time.Time
+	seed     int64
+	tskIndex int
+	startTs  time.Time
+	endTs    time.Time
+	output   []int
 }
 
 func (job *RandInts) AppendInput(input interface{}) {
 	return
 }
 
-func (job *RandInts) Init() {
+func (job *RandInts) Init() error {
 	job.startTs = time.Now()
 	job.seed = job.startTs.UnixNano()
 	job.tskIndex = 0
-	job.tskSegments = taskSegments
-	return
+	job.output = make([]int, 0)
+	return nil
 }
 
 func (job *RandInts) GetStartTs() time.Time {
@@ -47,33 +47,36 @@ func (job *RandInts) GetDesc() string {
 }
 
 func (job *RandInts) CalcTaskCnt() int {
-	return job.tskSegments
+	return GEN_SEGMENTS
 }
 
 func (job *RandInts) GetNextTask(tid string) *task.TaskSpec {
 	job.tskIndex++
-	if job.tskIndex > job.tskSegments {
+	if job.tskIndex > GEN_SEGMENTS {
 		return nil
 	}
 	spec := &taskSpecRandInts{
-		Seed:   job.seed,
-		Size:   job.tskIndex * 10,
-		MinNum: RandIntMin,
-		MaxNum: RandIntMax,
+		Seed: job.seed,
+		Size: job.tskIndex * 10,
 	}
 	return &task.TaskSpec{
 		Tid:  tid,
-		Kind: TaskKind,
+		Kind: RANDINTS_TASK_KIND,
 		Spec: spec,
 	}
 }
 
-func (job *RandInts) ReduceTask(report *task.TaskReport) {
-
+func (job *RandInts) ReduceTask(report *task.TaskReport) error {
+	a := make([]int, 0)
+	if err := util.FitDataInto(report.Output, &a); err != nil {
+		return err
+	}
+	job.output = append(job.output, a...)
+	return nil
 }
 
 func (job *RandInts) GetOutput() interface{} {
-	return ""
+	return job.output
 }
 
 func (job *RandInts) GetNextJobs() []task.Job {
@@ -85,30 +88,21 @@ func (job *RandInts) GetTaskGen() task.TaskGenerator {
 }
 
 type taskSpecRandInts struct {
-	Seed   int64
-	Size   int
-	MinNum int
-	MaxNum int
+	Seed int64
+	Size int
 }
 
-func TaskGenRandInts(tspec *task.TaskSpec, executorCnt int) (task.Task, error) {
+func TaskGenRandInts(tspec *task.TaskSpec) (task.Task, error) {
 	tsk := new(taskRandInts)
 	tsk.tid = tspec.Tid
 	tsk.kind = tspec.Kind
-	tsk.executorCnt = executorCnt
 	tsk.startTs = time.Now()
-	subspec := new(taskSpecRandInts)
-	if err := task.DecodeSpec(tspec, subspec); err != nil {
-		return nil, err
-	}
-	tsk.seed = subspec.Seed
-	tsk.total = subspec.Size
-	tsk.minNum = subspec.MinNum
-	tsk.maxNum = subspec.MaxNum
-	tsk.left = tsk.total
+	spec := new(taskSpecRandInts)
+	task.DecodeSpec(tspec, spec)
+	tsk.seed = spec.Seed
+	tsk.total = spec.Size
+	tsk.left = spec.Size
 	tsk.ints = make([]int, 0)
-	log.Info("Generate task %q, seed %d, total %d, left %d",
-		tsk.tid, tsk.seed, tsk.total, tsk.left)
 	return tsk, nil
 }
 
@@ -116,36 +110,34 @@ type taskRandInts struct {
 	err         error
 	tid         string
 	kind        string
-	executorCnt int
 	desc        string
 	startTs     time.Time
 	endTs       time.Time
 	seed        int64
 	total       int
-	minNum      int
-	maxNum      int
 	left        int
+	executorCnt int
 	taskletCnt  int
-	executorIdx int
 	ints        []int
 }
 
 type taskletRandIntsCtx struct {
-	rand   *rand.Rand
-	minNum int
-	maxNum int
+	rand *rand.Rand
 }
 
 func (ctx *taskletRandIntsCtx) Close() {
 }
 
+func (tsk *taskRandInts) Init(executorCnt int) error {
+	tsk.executorCnt = executorCnt
+	tsk.taskletCnt = (tsk.total + tsk.executorCnt - 1) / tsk.executorCnt
+	return nil
+}
+
 func (tsk *taskRandInts) NewTaskletCtx() task.TaskletCtx {
-	seed := tsk.seed + int64(tsk.executorIdx)
-	tsk.executorIdx++
+	seed := tsk.seed + time.Now().Unix()
 	ctx := new(taskletRandIntsCtx)
 	ctx.rand = rand.New(rand.NewSource(seed))
-	ctx.minNum = tsk.minNum
-	ctx.maxNum = tsk.maxNum
 	return ctx
 }
 
@@ -169,13 +161,11 @@ func (tsk *taskRandInts) GetDesc() string {
 	return tsk.desc
 }
 
-func (tsk *taskRandInts) CalcTaskletCnt() int {
-	tsk.taskletCnt = tsk.executorCnt * 2
+func (tsk *taskRandInts) GetTaskletCnt() int {
 	return tsk.taskletCnt
 }
 
 func (tsk *taskRandInts) GetNextTasklet(taskletid string) task.Tasklet {
-	log.Info("Randints, get next tasklet, left %d", tsk.left)
 	if tsk.left == 0 {
 		return nil
 	}
@@ -227,10 +217,9 @@ func (t *taskletRandInts) GetEndTs() time.Time {
 	return t.endTs
 }
 
-func (t *taskletRandInts) randInt(tctx *taskletRandIntsCtx) int {
-	cnt := tctx.maxNum - tctx.minNum + 1
-	num := tctx.rand.Int() % cnt
-	return num + tctx.minNum
+func (t *taskletRandInts) randInt(rand *rand.Rand) int {
+	d := MAX_INT - MIN_INT + 1
+	return rand.Int()%d + MIN_INT
 }
 
 func (t *taskletRandInts) Execute(ctx task.TaskletCtx) error {
@@ -238,8 +227,9 @@ func (t *taskletRandInts) Execute(ctx task.TaskletCtx) error {
 	t.startTs = time.Now()
 	t.ints = make([]int, 0)
 	for i := 0; i < t.size; i++ {
-		t.ints = append(t.ints, t.randInt(tctx))
+		t.ints = append(t.ints, t.randInt(tctx.rand))
 	}
 	t.endTs = time.Now()
+	time.Sleep(500 * time.Millisecond)
 	return nil
 }

@@ -24,6 +24,7 @@ func getHbInterval() (interval time.Duration, err error) {
 }
 
 func hbMain(args interface{}) {
+	log.Info("Post heartbeat...")
 	u := args.(*util.HttpUrl)
 	ts := time.Now()
 	if _, err := util.HttpPostData(u, ts); err != nil {
