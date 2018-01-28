@@ -1,15 +1,47 @@
 package taskreg
 
 import (
+	"fmt"
 	"pegasus/mergesort"
 	"pegasus/task"
+	"reflect"
 )
+
+var projs = make(map[string]reflect.Type)
 
 var taskGens = make(map[string]task.TaskGenerator)
 
-// TODO
-func registerTask(kind string, gen task.TaskGenerator) {
-	taskGens[kind] = gen
+func register(proj task.Project) {
+	if err := proj.Init(); err != nil {
+		panic(err)
+	}
+	name := proj.GetName()
+	if _, ok := projs[name]; ok {
+		panic(fmt.Errorf("proj %q already registered", name))
+	}
+	projs[name] = reflect.ValueOf(proj).Type()
+	if err := registerTasks(proj); err != nil {
+		panic(err)
+	}
+}
+
+func registerTasks(proj task.Project) error {
+	for _, job := range proj.GetJobs() {
+		kind := job.GetKind()
+		if _, ok := taskGens[kind]; ok {
+			return fmt.Errorf("Job %q already registered", kind)
+		}
+		taskGens[kind] = job.GetTaskGen()
+	}
+	return nil
+}
+
+func GetProj(name string) task.Project {
+	projType, ok := projs[name]
+	if !ok {
+		return nil
+	}
+	return reflect.New(projType).Interface().(task.Project)
 }
 
 func GetTaskGenerator(kind string) task.TaskGenerator {
@@ -21,5 +53,5 @@ func GetTaskGenerator(kind string) task.TaskGenerator {
 }
 
 func init() {
-	registerTask(mergesort.RANDINTS_TASK_KIND, mergesort.TaskGenRandInts)
+	register(new(mergesort.ProjMergesort))
 }

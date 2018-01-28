@@ -144,12 +144,6 @@ func registerRoutes() {
 		Path:    uri.MasterTestUri,
 		Handler: testHandler,
 	})
-	route.RegisterRoute(&route.Route{
-		Name:    "testRunHandler",
-		Method:  http.MethodGet,
-		Path:    uri.MasterTestUri,
-		Handler: testRunHandler,
-	})
 }
 
 func initLogger() error {

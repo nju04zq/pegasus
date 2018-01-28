@@ -9,24 +9,26 @@ import (
 
 const (
 	GEN_SEGMENTS       = 4
-	RANDINTS_TASK_KIND = "randints"
+	JOB_KIND_RANDINTS  = "Mergesort:randints"
+	TASK_KIND_RANDINTS = JOB_KIND_RANDINTS
 	MIN_INT            = 1
 	MAX_INT            = 100
 )
 
-type RandInts struct {
+type JobRandInts struct {
 	seed     int64
 	tskIndex int
 	startTs  time.Time
 	endTs    time.Time
 	output   []int
+	nextJobs []*JobMergesort
 }
 
-func (job *RandInts) AppendInput(input interface{}) {
+func (job *JobRandInts) AppendInput(input interface{}) {
 	return
 }
 
-func (job *RandInts) Init() error {
+func (job *JobRandInts) Init() error {
 	job.startTs = time.Now()
 	job.seed = job.startTs.UnixNano()
 	job.tskIndex = 0
@@ -34,23 +36,23 @@ func (job *RandInts) Init() error {
 	return nil
 }
 
-func (job *RandInts) GetStartTs() time.Time {
+func (job *JobRandInts) GetStartTs() time.Time {
 	return job.startTs
 }
 
-func (job *RandInts) GetEndTs() time.Time {
+func (job *JobRandInts) GetEndTs() time.Time {
 	return job.endTs
 }
 
-func (job *RandInts) GetDesc() string {
-	return "Generate random int sequence"
+func (job *JobRandInts) GetKind() string {
+	return JOB_KIND_RANDINTS
 }
 
-func (job *RandInts) CalcTaskCnt() int {
+func (job *JobRandInts) CalcTaskCnt() int {
 	return GEN_SEGMENTS
 }
 
-func (job *RandInts) GetNextTask(tid string) *task.TaskSpec {
+func (job *JobRandInts) GetNextTask(tid string) *task.TaskSpec {
 	job.tskIndex++
 	if job.tskIndex > GEN_SEGMENTS {
 		return nil
@@ -61,29 +63,31 @@ func (job *RandInts) GetNextTask(tid string) *task.TaskSpec {
 	}
 	return &task.TaskSpec{
 		Tid:  tid,
-		Kind: RANDINTS_TASK_KIND,
+		Kind: TASK_KIND_RANDINTS,
 		Spec: spec,
 	}
 }
 
-func (job *RandInts) ReduceTask(report *task.TaskReport) error {
-	a := make([]int, 0)
-	if err := util.FitDataInto(report.Output, &a); err != nil {
-		return err
+func (job *JobRandInts) ReduceTasks(reports []*task.TaskReport) error {
+	for _, report := range reports {
+		a := make([]int, 0)
+		if err := util.FitDataInto(report.Output, &a); err != nil {
+			return err
+		}
+		job.output = append(job.output, a...)
 	}
-	job.output = append(job.output, a...)
 	return nil
 }
 
-func (job *RandInts) GetOutput() interface{} {
+func (job *JobRandInts) GetOutput() interface{} {
 	return job.output
 }
 
-func (job *RandInts) GetNextJobs() []task.Job {
+func (job *JobRandInts) GetNextJobs() []task.Job {
 	return nil
 }
 
-func (job *RandInts) GetTaskGen() task.TaskGenerator {
+func (job *JobRandInts) GetTaskGen() task.TaskGenerator {
 	return TaskGenRandInts
 }
 
@@ -96,7 +100,6 @@ func TaskGenRandInts(tspec *task.TaskSpec) (task.Task, error) {
 	tsk := new(taskRandInts)
 	tsk.tid = tspec.Tid
 	tsk.kind = tspec.Kind
-	tsk.startTs = time.Now()
 	spec := new(taskSpecRandInts)
 	task.DecodeSpec(tspec, spec)
 	tsk.seed = spec.Seed
@@ -129,6 +132,7 @@ func (ctx *taskletRandIntsCtx) Close() {
 }
 
 func (tsk *taskRandInts) Init(executorCnt int) error {
+	tsk.startTs = time.Now()
 	tsk.executorCnt = executorCnt
 	tsk.taskletCnt = (tsk.total + tsk.executorCnt - 1) / tsk.executorCnt
 	return nil
@@ -145,7 +149,7 @@ func (tsk *taskRandInts) GetTaskId() string {
 	return tsk.tid
 }
 
-func (tsk *taskRandInts) GetTaskKind() string {
+func (tsk *taskRandInts) GetKind() string {
 	return tsk.kind
 }
 
@@ -180,9 +184,11 @@ func (tsk *taskRandInts) GetNextTasklet(taskletid string) task.Tasklet {
 	}
 }
 
-func (tsk *taskRandInts) ReduceTasklet(t task.Tasklet) {
-	tasklet := t.(*taskletRandInts)
-	tsk.ints = append(tsk.ints, tasklet.ints...)
+func (tsk *taskRandInts) ReduceTasklets(tasklets []task.Tasklet) {
+	for _, t := range tasklets {
+		tasklet := t.(*taskletRandInts)
+		tsk.ints = append(tsk.ints, tasklet.ints...)
+	}
 }
 
 func (tsk *taskRandInts) SetError(err error) {

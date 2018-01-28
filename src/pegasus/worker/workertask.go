@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"pegasus/log"
 	"pegasus/server"
 	"pegasus/task"
@@ -63,7 +62,7 @@ func (ctx *TaskCtx) checkAndUnsetFree(tsk task.Task) error {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 	if !ctx.free {
-		return fmt.Errorf("Worker busy with task %q", ctx.tsk.GetTaskKind())
+		return fmt.Errorf("Worker busy with task %q", ctx.tsk.GetKind())
 	}
 	ctx.free = false
 	ctx.tsk = tsk
@@ -182,24 +181,20 @@ func taskletExecutor(eid int, ctx *TaskCtx, c task.TaskletCtx) {
 func reduceTasklets(tsk task.Task, ctx *TaskCtx) {
 	log.Info("Reduce tasklets for task %q", tsk.GetTaskId())
 	close(ctx.doneTasklets)
+	tasklets := make([]task.Tasklet, 0, len(ctx.doneTasklets))
 	for {
 		tasklet, ok := <-ctx.doneTasklets
 		if !ok {
 			break
 		}
-		tsk.ReduceTasklet(tasklet)
+		tasklets = append(tasklets, tasklet)
 	}
+	tsk.ReduceTasklets(tasklets)
 }
 
 func sendTaskReport(report *task.TaskReport) {
 	log.Info("Send out task report for %q", report.Tid)
-	u := &util.HttpUrl{
-		IP:   workerSelf.masterIp,
-		Port: workerSelf.masterPort,
-		Uri:  uri.MasterWorkerTaskReportUri,
-	}
-	u.Query = make(url.Values)
-	u.Query.Add(uri.MasterWorkerQueryKey, workerSelf.Key)
+	u := workerSelf.makeMasterUrl(uri.MasterWorkerQueryKey)
 	if _, err := util.HttpPostData(u, report); err == nil {
 		log.Info("Send out task report for %q done", report.Tid)
 	} else {

@@ -10,11 +10,7 @@ import (
 )
 
 func getHbInterval() (interval time.Duration, err error) {
-	u := &util.HttpUrl{
-		IP:   workerSelf.masterIp,
-		Port: workerSelf.masterPort,
-		Uri:  uri.MasterWorkerHbIntervalUri,
-	}
+	u := workerSelf.makeMasterUrl(uri.MasterWorkerHbIntervalUri)
 	s, err := util.HttpGet(u)
 	if err != nil {
 		return

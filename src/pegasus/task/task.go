@@ -7,7 +7,14 @@ import (
 )
 
 type Project interface {
+	Init() error
+	GetName() string
 	GetJobs() []Job
+	GetStartTs() time.Time
+	GetEndTs() time.Time
+	SetErr(error)
+	GetErr() error
+	Finish() error
 }
 
 type Job interface {
@@ -15,10 +22,10 @@ type Job interface {
 	Init() error
 	GetStartTs() time.Time
 	GetEndTs() time.Time
-	GetDesc() string
+	GetKind() string
 	CalcTaskCnt() int
 	GetNextTask(tid string) *TaskSpec
-	ReduceTask(*TaskReport) error
+	ReduceTasks([]*TaskReport) error
 	GetOutput() interface{}
 	GetNextJobs() []Job
 	GetTaskGen() TaskGenerator
@@ -52,13 +59,12 @@ type Task interface {
 	Init(int) error
 	NewTaskletCtx() TaskletCtx
 	GetTaskId() string
-	GetTaskKind() string
+	GetKind() string
 	GetStartTs() time.Time
 	GetEndTs() time.Time
-	GetDesc() string
 	GetTaskletCnt() int
 	GetNextTasklet(string) Tasklet
-	ReduceTasklet(Tasklet)
+	ReduceTasklets([]Tasklet)
 	SetError(error)
 	GetError() error
 	GetOutput() interface{}
@@ -81,7 +87,6 @@ type TaskReport struct {
 	Kind    string
 	StartTs time.Time
 	EndTs   time.Time
-	Desc    string
 	Output  interface{}
 }
 
@@ -93,10 +98,9 @@ func GenerateTaskReport(tsk Task) *TaskReport {
 	return &TaskReport{
 		Err:     errMsg,
 		Tid:     tsk.GetTaskId(),
-		Kind:    tsk.GetTaskKind(),
+		Kind:    tsk.GetKind(),
 		StartTs: tsk.GetStartTs(),
 		EndTs:   tsk.GetEndTs(),
-		Desc:    tsk.GetDesc(),
 		Output:  tsk.GetOutput(),
 	}
 }

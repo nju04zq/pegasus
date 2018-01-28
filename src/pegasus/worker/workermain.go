@@ -25,6 +25,17 @@ type Worker struct {
 	masterPort   int
 }
 
+func (w *Worker) makeMasterUrl(uriQuery string) *util.HttpUrl {
+	u := &util.HttpUrl{
+		IP:    workerSelf.masterIp,
+		Port:  workerSelf.masterPort,
+		Uri:   uriQuery,
+		Query: make(url.Values),
+	}
+	u.Query.Add(uri.MasterWorkerQueryKey, w.Key)
+	return u
+}
+
 var workerSelf = new(Worker)
 
 func waitForMasterReady() {

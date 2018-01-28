@@ -18,4 +18,5 @@ const (
 
 const (
 	MasterWorkerQueryKey = "key"
+	MasterProjNameKey    = "proj"
 )

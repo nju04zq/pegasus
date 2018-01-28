@@ -330,11 +330,8 @@ func registerWorkerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getWorkerKeyFromReq(r *http.Request) (string, error) {
-	if err := r.ParseForm(); err != nil {
-		return "", fmt.Errorf("Fail to parse form, %v", err)
-	}
-	key := r.Form.Get(uri.MasterWorkerQueryKey)
-	return key, nil
+	key, err := util.GetFormValFromReq(r, uri.MasterWorkerQueryKey)
+	return key, err
 }
 
 func verifyWorkerHandler(w http.ResponseWriter, r *http.Request) {

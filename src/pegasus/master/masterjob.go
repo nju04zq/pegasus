@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"pegasus/log"
-	"pegasus/mergesort"
 	"pegasus/server"
 	"pegasus/task"
 	"pegasus/util"
@@ -60,9 +59,9 @@ func (ctx *JobCtx) reset() {
 }
 
 func (ctx *JobCtx) assignJob(job task.Job) error {
-	log.Info("Assign and init job %q", job.GetDesc())
+	log.Info("Assign and init job %q", job.GetKind())
 	if err := job.Init(); err != nil {
-		err = fmt.Errorf("Fail to init job %q, %v", job.GetDesc(), err)
+		err = fmt.Errorf("Fail to init job %q, %v", job.GetKind(), err)
 		log.Error(err.Error())
 		return err
 	}
@@ -286,7 +285,7 @@ func reassignTask(tspec *task.TaskSpec) {
 }
 
 func waitForJobDone(ctx *JobCtx) error {
-	log.Info("Wait for job %q done", ctx.curJob.GetDesc())
+	log.Info("Wait for job %q done", ctx.curJob.GetKind())
 	select {
 	case <-ctx.finish:
 		break
@@ -302,12 +301,14 @@ func generateTid(idx int) string {
 
 func reduceTasks(ctx *JobCtx) error {
 	log.Info("Reduce tasks for job")
+	reports := make([]*task.TaskReport, 0)
 	for _, m := range ctx.taskMetas {
-		err := ctx.curJob.ReduceTask(m.report)
-		if err != nil {
-			log.Error("Fail to reduce task, %v", err)
-			return err
-		}
+		reports = append(reports, m.report)
+	}
+	err := ctx.curJob.ReduceTasks(reports)
+	if err != nil {
+		log.Error("Fail to reduce task, %v", err)
+		return err
 	}
 	return nil
 }
@@ -321,7 +322,7 @@ func feedNextJobs(job task.Job) {
 }
 
 func runJob(job task.Job) error {
-	log.Info("Running job %q", job.GetDesc())
+	log.Info("Running job %q", job.GetKind())
 	jobctx.reset()
 	go taskDispatcher(jobctx)
 	if err := jobctx.assignJob(job); err != nil {
@@ -337,16 +338,6 @@ func runJob(job task.Job) error {
 		return err
 	}
 	feedNextJobs(job)
-	log.Info("Run job %q done", job.GetDesc())
+	log.Info("Run job %q done", job.GetKind())
 	return nil
-}
-
-func testRunHandler(w http.ResponseWriter, r *http.Request) {
-	job := new(mergesort.RandInts)
-	if err := runJob(job); err != nil {
-		log.Info("Run job %q error %v", job.GetDesc(), err)
-		server.FmtResp(w, err, nil)
-	} else {
-		server.FmtResp(w, nil, job.GetOutput())
-	}
 }
