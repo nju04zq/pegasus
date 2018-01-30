@@ -4,19 +4,22 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"pegasus/cfgmgr"
 	"pegasus/log"
 	"pegasus/route"
 	"pegasus/server"
 	"pegasus/uri"
 	"pegasus/util"
+	"pegasus/workgroup"
 	"time"
 )
 
 var cfgServerIP = "127.0.0.1"
 
 type Worker struct {
-	Ip           string
+	Name         string
+	IP           string
 	ListenPort   int
 	Key          string
 	workerServer *server.Server
@@ -81,7 +84,7 @@ func discoverIp() error {
 	if err != nil {
 		return err
 	}
-	workerSelf.Ip = ip
+	workerSelf.IP = ip
 	log.Info("Discover self ip address as %s", ip)
 	return nil
 }
@@ -92,7 +95,7 @@ func prepareNetwork() error {
 	if err := discoverIp(); err != nil {
 		return err
 	}
-	if err := s.Listen(workerSelf.Ip); err != nil {
+	if err := s.Listen(workerSelf.IP); err != nil {
 		return fmt.Errorf("Fail to listen, %v", err)
 	}
 	workerSelf.workerServer = s
@@ -103,11 +106,15 @@ func prepareNetwork() error {
 	}
 	workerSelf.ListenPort = port
 	log.Info("Listen on %d", workerSelf.ListenPort)
+	hostname, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+	workerSelf.Name = fmt.Sprintf("%s(%s)", hostname, workerSelf.workerAddr)
 	return nil
 }
 
-func registerOnMaster() (err error) {
-	log.Info("Register on master")
+func getRegisterKey() (err error) {
 	u := &util.HttpUrl{
 		IP:   workerSelf.masterIp,
 		Port: workerSelf.masterPort,
@@ -124,13 +131,25 @@ func registerOnMaster() (err error) {
 		time.Sleep(sleepTime)
 	}
 	log.Info("Get worker's key as %s", key)
-	u.Query = make(url.Values)
-	u.Query.Add(uri.MasterWorkerQueryKey, key)
-	_, err = util.HttpPostStr(u, workerSelf.workerAddr)
+	workerSelf.Key = key
+	return
+}
+
+func registerOnMaster() (err error) {
+	log.Info("Register on master")
+	if err := getRegisterKey(); err != nil {
+		return err
+	}
+	u := workerSelf.makeMasterUrl(uri.MasterRegisterWokerUri)
+	form := &workgroup.WorkerRegForm{
+		Name: workerSelf.Name,
+		IP:   workerSelf.IP,
+		Port: workerSelf.ListenPort,
+	}
+	_, err = util.HttpPostData(u, &form)
 	if err != nil {
 		return fmt.Errorf("Fail to verify, %v", err)
 	}
-	workerSelf.Key = key
 	log.Info("Register on master done")
 	return
 }

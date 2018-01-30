@@ -110,6 +110,17 @@ func HttpReadRequestTextBody(r *http.Request) (string, error) {
 	return string(body), nil
 }
 
+func HttpFitRequestInto(r *http.Request, v interface{}) error {
+	buf, err := HttpReadRequestJsonBody(r)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(buf, v); err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetRequestAddr(r *http.Request) string {
 	return r.RemoteAddr
 }

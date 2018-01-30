@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"pegasus/cfgmgr"
 	"pegasus/log"
 	"pegasus/route"
@@ -15,7 +16,8 @@ import (
 var cfgServerIP = "127.0.0.1"
 
 type Master struct {
-	Ip           string
+	Name         string
+	IP           string
 	ListenPort   int
 	masterServer *server.Server
 	masterAddr   string
@@ -29,7 +31,7 @@ func discoverIp() error {
 	if err != nil {
 		return err
 	}
-	masterSelf.Ip = ip
+	masterSelf.IP = ip
 	log.Info("Discover self ip address as %s", ip)
 	return nil
 }
@@ -40,7 +42,7 @@ func prepareNetwork() error {
 	if err := discoverIp(); err != nil {
 		return err
 	}
-	if err := s.Listen(masterSelf.Ip); err != nil {
+	if err := s.Listen(masterSelf.IP); err != nil {
 		return fmt.Errorf("Fail to listen, %v", err)
 	}
 	masterSelf.masterServer = s
@@ -50,7 +52,12 @@ func prepareNetwork() error {
 		return err
 	}
 	masterSelf.ListenPort = port
-	log.Info("Listen on %s:%d", masterSelf.Ip, masterSelf.ListenPort)
+	log.Info("Listen on %s:%d", masterSelf.IP, masterSelf.ListenPort)
+	hostname, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+	masterSelf.Name = fmt.Sprintf("%s(%s)", hostname, masterSelf.masterAddr)
 	return nil
 }
 

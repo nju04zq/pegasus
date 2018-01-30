@@ -9,6 +9,7 @@ import (
 	"pegasus/task"
 	"pegasus/uri"
 	"pegasus/util"
+	"pegasus/workgroup"
 	"sync"
 	"time"
 )
@@ -33,7 +34,7 @@ const (
 var wmgr = new(workerMgr)
 
 type Worker struct {
-	Addr        string
+	Name        string
 	ip          string
 	port        int
 	Key         string
@@ -106,23 +107,19 @@ func (mgr *workerMgr) registerWorker() (key string, err error) {
 	return
 }
 
-func (mgr *workerMgr) verifyWorker(addr, key string) (err error) {
+func (mgr *workerMgr) verifyWorker(form *workgroup.WorkerRegForm, key string) (err error) {
 	mgr.mutex.Lock()
 	defer func() {
 		mgr.mutex.Unlock()
-		log.Info("Verify worker %q, key %q, err %v", addr, key, err)
+		log.Info("Verify worker %q, key %q, err %v", form.Name, key, err)
 	}()
 	worker, ok := mgr.workers[key]
 	if !ok {
 		err := fmt.Errorf("Worker key %s not registered", key)
 		return err
 	}
-	ip, port, err := util.SplitAddr(addr)
-	if err != nil {
-		err = fmt.Errorf("Fail to split addr, %v", err)
-		return
-	}
-	worker.Addr, worker.ip, worker.port = addr, ip, port
+	worker.Name = form.Name
+	worker.ip, worker.port = form.IP, form.Port
 	worker.StatusStart = time.Now()
 	// TODO for test purpose
 	//mgr.insertWorker(worker, &mgr.unstableWorkers)
@@ -235,7 +232,7 @@ func (mgr *workerMgr) dispatchTaskTo(t *task.TaskSpec, w *Worker) error {
 		Uri:  uri.WorkerTaskUri,
 	}
 	if _, err := util.HttpPostData(url, t); err != nil {
-		return fmt.Errorf("Fail to post task spec to %q, %v", w.Addr, err)
+		return fmt.Errorf("Fail to post task spec to %q, %v", w.Name, err)
 	}
 	w.tspec = t
 	log.Info("Post task %q done", t.Tid)
@@ -260,8 +257,8 @@ func (mgr *workerMgr) dispatchTask(t *task.TaskSpec) (string, error) {
 		w.Status = WORKER_STATUS_UNSTABLE
 		mgr.insertWorkerInlock(w, &mgr.unstableWorkers)
 	}
-	log.Info("Dispatch task %q successfully to %s", t.Tid, w.Addr)
-	return w.Addr, nil
+	log.Info("Dispatch task %q successfully to %s", t.Tid, w.Name)
+	return w.Name, nil
 }
 
 func (mgr *workerMgr) releaseWorker(w *Worker) (logMsg string) {
@@ -335,8 +332,9 @@ func getWorkerKeyFromReq(r *http.Request) (string, error) {
 }
 
 func verifyWorkerHandler(w http.ResponseWriter, r *http.Request) {
-	addr, err := util.HttpReadRequestTextBody(r)
-	if err != nil {
+	form := new(workgroup.WorkerRegForm)
+	if err := util.HttpFitRequestInto(r, form); err != nil {
+		log.Error("Fail to get reg form from request, %v", err)
 		server.FmtResp(w, err, "")
 		return
 	}
@@ -346,7 +344,7 @@ func verifyWorkerHandler(w http.ResponseWriter, r *http.Request) {
 		server.FmtResp(w, err, "")
 		return
 	}
-	err = wmgr.verifyWorker(addr, key)
+	err = wmgr.verifyWorker(form, key)
 	server.FmtResp(w, err, "")
 }
 
@@ -368,7 +366,7 @@ func workerHbIntervalHandler(w http.ResponseWriter, r *http.Request) {
 
 type monitorRec struct {
 	workerKey  string
-	workerAddr string
+	workerName string
 	oldStatus  string
 	newStatus  string
 }
@@ -382,7 +380,7 @@ func monitorGoodWorker(w *Worker) *monitorRec {
 	}
 	rec := &monitorRec{
 		workerKey:  w.Key,
-		workerAddr: w.Addr,
+		workerName: w.Name,
 		oldStatus:  w.Status,
 		newStatus:  WORKER_STATUS_ACTIVE,
 	}
@@ -413,7 +411,7 @@ func monitorBadWorker(w *Worker) *monitorRec {
 	}
 	rec := &monitorRec{
 		workerKey:  w.Key,
-		workerAddr: w.Addr,
+		workerName: w.Name,
 		oldStatus:  oldStatus,
 		newStatus:  w.Status,
 	}
@@ -433,7 +431,7 @@ func monitorOneWorker(w *Worker) *monitorRec {
 		wmgr.removeWorker(w)
 		return &monitorRec{
 			workerKey:  w.Key,
-			workerAddr: w.Addr,
+			workerName: w.Name,
 			oldStatus:  w.Status,
 			newStatus:  WORKER_STATUS_REMOVED,
 		}
@@ -475,9 +473,9 @@ func wmgrMonitorMain(args interface{}) {
 	t2 := time.Now()
 	log.Info("WMGR monitor done")
 	tbl := new(util.PrettyTable)
-	tbl.Init([]string{"Key", "Addr", "From", "To"})
+	tbl.Init([]string{"Key", "Name", "From", "To"})
 	for _, rec := range recs {
-		tbl.AppendLine([]string{rec.workerKey, rec.workerAddr,
+		tbl.AppendLine([]string{rec.workerKey, rec.workerName,
 			rec.oldStatus, rec.newStatus})
 	}
 	log.Info("WMGR monitor took %v, records:\n%s", t2.Sub(t1), tbl.Format())
