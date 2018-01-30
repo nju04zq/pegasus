@@ -1,6 +1,7 @@
 package mergesort
 
 import (
+	"pegasus/log"
 	"pegasus/task"
 	"pegasus/util"
 	"sort"
@@ -38,6 +39,7 @@ func (job *JobMergesort) Init() error {
 	job.startTs = time.Now()
 	job.output = make([]int, 0)
 	job.tskSize = (job.total + SPLIT_SEGMENTS - 1) / SPLIT_SEGMENTS
+	log.Info("Job input %v, task size %d", job.input, job.tskSize)
 	return nil
 }
 
@@ -65,9 +67,11 @@ func (job *JobMergesort) GetNextTask(tid string) *task.TaskSpec {
 	if end > job.total {
 		end = job.total
 	}
+	log.Info("Get task from %d to %d", job.nextStart, end)
 	spec := &taskSpecMergesort{
-		seq: job.input[job.nextStart:end],
+		Seq: job.input[job.nextStart:end],
 	}
+	job.nextStart = end
 	return &task.TaskSpec{
 		Tid:  tid,
 		Kind: TASK_KIND_MERGESORT,
@@ -94,7 +98,11 @@ func (job *JobMergesort) GetOutput() interface{} {
 }
 
 func (job *JobMergesort) GetNextJobs() []task.Job {
-	return nil
+	jobs := make([]task.Job, 0, len(job.nextJobs))
+	for _, j := range job.nextJobs {
+		jobs = append(jobs, j)
+	}
+	return jobs
 }
 
 func (job *JobMergesort) GetTaskGen() task.TaskGenerator {
@@ -102,7 +110,7 @@ func (job *JobMergesort) GetTaskGen() task.TaskGenerator {
 }
 
 type taskSpecMergesort struct {
-	seq []int
+	Seq []int
 }
 
 func TaskGenMergesort(tspec *task.TaskSpec) (task.Task, error) {
@@ -111,7 +119,7 @@ func TaskGenMergesort(tspec *task.TaskSpec) (task.Task, error) {
 	tsk.kind = tspec.Kind
 	spec := new(taskSpecMergesort)
 	task.DecodeSpec(tspec, spec)
-	tsk.seq = spec.seq
+	tsk.seq = spec.Seq
 	return tsk, nil
 }
 
@@ -174,6 +182,7 @@ func (tsk *taskMergesort) GetNextTasklet(taskletid string) task.Tasklet {
 	if tsk.left == 0 {
 		return nil
 	}
+	tsk.left--
 	return &taskletMergesort{
 		tid: taskletid,
 		seq: tsk.seq,

@@ -139,6 +139,12 @@ func registerRoutes() {
 		Handler: taskReportHandler,
 	})
 	route.RegisterRoute(&route.Route{
+		Name:    "runProjHandler",
+		Method:  http.MethodPost,
+		Path:    uri.MasterProjectUri,
+		Handler: runProjHandler,
+	})
+	route.RegisterRoute(&route.Route{
 		Name:    "testHandler",
 		Method:  http.MethodPost,
 		Path:    uri.MasterTestUri,
@@ -148,7 +154,8 @@ func registerRoutes() {
 
 func initLogger() error {
 	consoleLogger := &log.ConsoleLogger{
-		Level: log.LevelInfo,
+		//Level: log.LevelInfo,
+		Level: log.LevelDebug,
 	}
 	if err := log.RegisterLogger(consoleLogger); err != nil {
 		return err

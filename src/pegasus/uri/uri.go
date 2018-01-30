@@ -11,6 +11,7 @@ const (
 	MasterWorkerHbUri         = "/worker/heartbeat"
 	MasterWorkerHbIntervalUri = "/worker/heartbeat/interval"
 	MasterWorkerTaskReportUri = "/worker/task/report"
+	MasterProjectUri          = "/project"
 	MasterTestUri             = "/test"
 	WorkerTaskUri             = "/task"
 	WorkerTestUri             = "/test"

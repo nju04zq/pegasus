@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"pegasus/log"
 	"pegasus/task"
 	"time"
 )
@@ -38,6 +39,7 @@ func (job *JobDumpres) Init() error {
 	}
 	defer f.Close()
 	f.Write(buf)
+	log.Info("Job %q done, result file %q", job.GetKind(), fname)
 	return nil
 }
 

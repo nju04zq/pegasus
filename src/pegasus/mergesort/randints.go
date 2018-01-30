@@ -2,6 +2,7 @@ package mergesort
 
 import (
 	"math/rand"
+	"pegasus/log"
 	"pegasus/task"
 	"pegasus/util"
 	"time"
@@ -84,7 +85,11 @@ func (job *JobRandInts) GetOutput() interface{} {
 }
 
 func (job *JobRandInts) GetNextJobs() []task.Job {
-	return nil
+	jobs := make([]task.Job, 0, len(job.nextJobs))
+	for _, j := range job.nextJobs {
+		jobs = append(jobs, j)
+	}
+	return jobs
 }
 
 func (job *JobRandInts) GetTaskGen() task.TaskGenerator {
@@ -139,7 +144,8 @@ func (tsk *taskRandInts) Init(executorCnt int) error {
 }
 
 func (tsk *taskRandInts) NewTaskletCtx() task.TaskletCtx {
-	seed := tsk.seed + time.Now().Unix()
+	seed := tsk.seed + time.Now().UnixNano()
+	log.Info("Generate seed %d for tasklet ctx", seed)
 	ctx := new(taskletRandIntsCtx)
 	ctx.rand = rand.New(rand.NewSource(seed))
 	return ctx
@@ -187,6 +193,7 @@ func (tsk *taskRandInts) GetNextTasklet(taskletid string) task.Tasklet {
 func (tsk *taskRandInts) ReduceTasklets(tasklets []task.Tasklet) {
 	for _, t := range tasklets {
 		tasklet := t.(*taskletRandInts)
+		log.Info("From %q, ints %v", tasklet.tid, tasklet.ints)
 		tsk.ints = append(tsk.ints, tasklet.ints...)
 	}
 }

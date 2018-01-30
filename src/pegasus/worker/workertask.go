@@ -194,7 +194,7 @@ func reduceTasklets(tsk task.Task, ctx *TaskCtx) {
 
 func sendTaskReport(report *task.TaskReport) {
 	log.Info("Send out task report for %q", report.Tid)
-	u := workerSelf.makeMasterUrl(uri.MasterWorkerQueryKey)
+	u := workerSelf.makeMasterUrl(uri.MasterWorkerTaskReportUri)
 	if _, err := util.HttpPostData(u, report); err == nil {
 		log.Info("Send out task report for %q done", report.Tid)
 	} else {

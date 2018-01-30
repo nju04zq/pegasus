@@ -1,4 +1,4 @@
 #!/bin/bash
 
 master=$(curl -s -X GET http://127.0.0.1:10086/master)
-curl -s -X GET http://${master}/test
+curl -s -X POST http://${master}/project?proj=Mergesort

@@ -51,6 +51,7 @@ type JobCtx struct {
 
 func (ctx *JobCtx) reset() {
 	log.Info("Reset job ctx")
+	jobctx.err = nil
 	jobctx.finish = make(chan struct{})
 	jobctx.todoTasks = make(chan *task.TaskSpec, BUF_TASK_CNT)
 	jobctx.reassignedTasks = make(chan *task.TaskSpec, BUF_TASK_CNT)
@@ -72,6 +73,7 @@ func (ctx *JobCtx) assignJob(job task.Job) error {
 }
 
 func (ctx *JobCtx) setErr(err error) {
+	log.Info("Set err %v to job ctx", err)
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 	ctx.err = err
@@ -182,7 +184,8 @@ func taskReportHandler(w http.ResponseWriter, r *http.Request) {
 		server.FmtResp(w, err, nil)
 		return
 	}
-	log.Info("Get task report from %q:\n%s", key, body)
+	log.Info("Get task report from %q", key)
+	log.Debug("Task report from %q:\n%s", key, body)
 	report := new(task.TaskReport)
 	if err = json.Unmarshal(body, report); err != nil {
 		err = fmt.Errorf("Fail to unmarshal body for task report, %v, body:\n%s",
@@ -316,14 +319,14 @@ func reduceTasks(ctx *JobCtx) error {
 func feedNextJobs(job task.Job) {
 	log.Info("Feed output to next level jobs")
 	output := job.GetOutput()
+	log.Debug("Job %q output:\n%v", job.GetKind(), output)
 	for _, nextJob := range job.GetNextJobs() {
+		log.Info("Append output to job %q", nextJob.GetKind())
 		nextJob.AppendInput(output)
 	}
 }
 
-func runJob(job task.Job) error {
-	log.Info("Running job %q", job.GetKind())
-	jobctx.reset()
+func splitJobAndRun(job task.Job) error {
 	go taskDispatcher(jobctx)
 	if err := jobctx.assignJob(job); err != nil {
 		return err
@@ -336,6 +339,20 @@ func runJob(job task.Job) error {
 	}
 	if err := reduceTasks(jobctx); err != nil {
 		return err
+	}
+	return nil
+}
+
+func runJob(job task.Job) error {
+	log.Info("Running job %q", job.GetKind())
+	jobctx.reset()
+	if err := jobctx.assignJob(job); err != nil {
+		return err
+	}
+	if jobctx.taskStats.total > 0 {
+		if err := splitJobAndRun(job); err != nil {
+			return err
+		}
 	}
 	feedNextJobs(job)
 	log.Info("Run job %q done", job.GetKind())

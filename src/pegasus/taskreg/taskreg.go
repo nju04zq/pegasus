@@ -19,7 +19,7 @@ func register(proj task.Project) {
 	if _, ok := projs[name]; ok {
 		panic(fmt.Errorf("proj %q already registered", name))
 	}
-	projs[name] = reflect.ValueOf(proj).Type()
+	projs[name] = reflect.ValueOf(proj).Elem().Type()
 	if err := registerTasks(proj); err != nil {
 		panic(err)
 	}

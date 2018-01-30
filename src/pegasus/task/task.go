@@ -10,18 +10,12 @@ type Project interface {
 	Init() error
 	GetName() string
 	GetJobs() []Job
-	GetStartTs() time.Time
-	GetEndTs() time.Time
-	SetErr(error)
-	GetErr() error
 	Finish() error
 }
 
 type Job interface {
 	AppendInput(input interface{})
 	Init() error
-	GetStartTs() time.Time
-	GetEndTs() time.Time
 	GetKind() string
 	CalcTaskCnt() int
 	GetNextTask(tid string) *TaskSpec
