@@ -1,6 +1,7 @@
 package mergesort
 
 import (
+	"fmt"
 	"math/rand"
 	"pegasus/log"
 	"pegasus/task"
@@ -19,8 +20,6 @@ const (
 type JobRandInts struct {
 	seed     int64
 	tskIndex int
-	startTs  time.Time
-	endTs    time.Time
 	output   []int
 	nextJobs []*JobMergesort
 }
@@ -30,19 +29,10 @@ func (job *JobRandInts) AppendInput(input interface{}) {
 }
 
 func (job *JobRandInts) Init() error {
-	job.startTs = time.Now()
-	job.seed = job.startTs.UnixNano()
+	job.seed = time.Now().UnixNano()
 	job.tskIndex = 0
 	job.output = make([]int, 0)
 	return nil
-}
-
-func (job *JobRandInts) GetStartTs() time.Time {
-	return job.startTs
-}
-
-func (job *JobRandInts) GetEndTs() time.Time {
-	return job.endTs
 }
 
 func (job *JobRandInts) GetKind() string {
@@ -118,9 +108,6 @@ type taskRandInts struct {
 	err         error
 	tid         string
 	kind        string
-	desc        string
-	startTs     time.Time
-	endTs       time.Time
 	seed        int64
 	total       int
 	left        int
@@ -137,7 +124,6 @@ func (ctx *taskletRandIntsCtx) Close() {
 }
 
 func (tsk *taskRandInts) Init(executorCnt int) error {
-	tsk.startTs = time.Now()
 	tsk.executorCnt = executorCnt
 	tsk.taskletCnt = (tsk.total + tsk.executorCnt - 1) / tsk.executorCnt
 	return nil
@@ -159,16 +145,8 @@ func (tsk *taskRandInts) GetKind() string {
 	return tsk.kind
 }
 
-func (tsk *taskRandInts) GetStartTs() time.Time {
-	return tsk.startTs
-}
-
-func (tsk *taskRandInts) GetEndTs() time.Time {
-	return tsk.endTs
-}
-
 func (tsk *taskRandInts) GetDesc() string {
-	return tsk.desc
+	return fmt.Sprintf("%s:%d", JOB_KIND_RANDINTS, tsk.total)
 }
 
 func (tsk *taskRandInts) GetTaskletCnt() int {
@@ -211,23 +189,13 @@ func (tsk *taskRandInts) GetOutput() interface{} {
 }
 
 type taskletRandInts struct {
-	tid     string
-	startTs time.Time
-	endTs   time.Time
-	size    int
-	ints    []int
+	tid  string
+	size int
+	ints []int
 }
 
 func (t *taskletRandInts) GetTaskletId() string {
 	return t.tid
-}
-
-func (t *taskletRandInts) GetStartTs() time.Time {
-	return t.startTs
-}
-
-func (t *taskletRandInts) GetEndTs() time.Time {
-	return t.endTs
 }
 
 func (t *taskletRandInts) randInt(rand *rand.Rand) int {
@@ -237,12 +205,10 @@ func (t *taskletRandInts) randInt(rand *rand.Rand) int {
 
 func (t *taskletRandInts) Execute(ctx task.TaskletCtx) error {
 	tctx := ctx.(*taskletRandIntsCtx)
-	t.startTs = time.Now()
 	t.ints = make([]int, 0)
 	for i := 0; i < t.size; i++ {
 		t.ints = append(t.ints, t.randInt(tctx.rand))
 	}
-	t.endTs = time.Now()
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(2 * time.Second)
 	return nil
 }

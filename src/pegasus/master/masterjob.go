@@ -19,44 +19,188 @@ const (
 	TASK_MAX_ERR = 5
 )
 
-type TaskStats struct {
-	total      int
-	disptached int
-	done       int
+type TaskMeta struct {
+	Tid         string
+	Kind        string
+	Desc        string
+	StartTs     time.Time
+	EndTs       time.Time
+	WorkerLabel string
+	ErrCnt      int
+	ErrMsg      string
+	Total       int
+	Done        int
+	Dispatched  bool
+	Updated     bool
+	Finished    bool
+	tspec       *task.TaskSpec
+	report      *task.TaskReport
 }
 
-type TaskMeta struct {
-	Tid        string
+func (tmeta *TaskMeta) snapshot() *TaskMeta {
+	return &TaskMeta{
+		Tid:         tmeta.Tid,
+		Kind:        tmeta.Kind,
+		Desc:        tmeta.Desc,
+		StartTs:     tmeta.StartTs,
+		EndTs:       tmeta.EndTs,
+		WorkerLabel: tmeta.WorkerLabel,
+		ErrCnt:      tmeta.ErrCnt,
+		ErrMsg:      tmeta.ErrMsg,
+		Total:       tmeta.Total,
+		Done:        tmeta.Done,
+		Dispatched:  tmeta.Dispatched,
+		Updated:     tmeta.Updated,
+		Finished:    tmeta.Finished,
+	}
+}
+
+type JobMeta struct {
 	Kind       string
 	StartTs    time.Time
 	EndTs      time.Time
-	WorkerAddr string
-	ErrCnt     int
 	ErrMsg     string
-	tspec      *task.TaskSpec
-	report     *task.TaskReport
+	err        error
+	Finished   bool
+	Total      int
+	Dispatched int
+	Done       int
+	TaskMetas  []*TaskMeta
+	taskMetas  map[string]*TaskMeta
+}
+
+func (m *JobMeta) Init() *JobMeta {
+	m.TaskMetas = make([]*TaskMeta, 0)
+	m.taskMetas = make(map[string]*TaskMeta)
+	return m
+}
+
+func (m *JobMeta) setJob(job task.Job) {
+	m.Kind = job.GetKind()
+	m.Total = job.CalcTaskCnt()
+	log.Info("Total task count %d", m.Total)
+}
+
+func (m *JobMeta) setErr(err error) {
+	m.err = err
+	m.ErrMsg = err.Error()
+}
+
+func (m *JobMeta) getErr() error {
+	return m.err
+}
+
+func (m *JobMeta) incDispatched() {
+	m.Dispatched++
+}
+
+func (m *JobMeta) incDone() {
+	m.Done++
+}
+
+func (m *JobMeta) allDone() bool {
+	return m.Total == m.Done
+}
+
+func (m *JobMeta) addTaskMeta(tspec *task.TaskSpec) {
+	tmeta := &TaskMeta{
+		Tid:   tspec.Tid,
+		Kind:  tspec.Kind,
+		tspec: tspec,
+	}
+	if _, ok := m.taskMetas[tspec.Tid]; ok {
+		log.Error("Task %q meta already set", tspec.Tid)
+	}
+	m.taskMetas[tspec.Tid] = tmeta
+	m.TaskMetas = append(m.TaskMetas, tmeta)
+}
+
+func (m *JobMeta) getTaskMeta(tid string) *TaskMeta {
+	if tmeta, ok := m.taskMetas[tid]; !ok {
+		log.Error("Task %q meta not found", tid)
+		return nil
+	} else {
+		return tmeta
+	}
+}
+
+func (m *JobMeta) addTaskReport(report *task.TaskReport) {
+	m.updateTaskStatus(report.Status)
+	tmeta := m.getTaskMeta(report.Tid)
+	if tmeta == nil {
+		log.Error("Task %q meta info not found", report.Tid)
+		return
+	}
+	tmeta.StartTs = report.StartTs
+	tmeta.EndTs = report.EndTs
+	if report.Err == "" {
+		tmeta.report = report
+	} else {
+		tmeta.ErrCnt++
+		tmeta.ErrMsg = report.Err
+	}
+}
+
+func (m *JobMeta) updateTaskStatus(status *task.TaskStatus) {
+	tmeta := m.getTaskMeta(status.Tid)
+	if tmeta == nil {
+		log.Error("Task %q meta info not found", status.Tid)
+		return
+	}
+	tmeta.Desc = status.Desc
+	tmeta.StartTs = status.StartTs
+	tmeta.Finished = status.Finished
+	tmeta.Total = status.Total
+	tmeta.Done = status.Done
+	tmeta.Updated = true
+}
+
+func (m *JobMeta) snapshot() *JobMeta {
+	tmetas := make([]*TaskMeta, 0, len(m.TaskMetas))
+	for _, tmeta := range m.TaskMetas {
+		if tmeta.Dispatched {
+			tmetas = append(tmetas, tmeta.snapshot())
+		}
+	}
+	return &JobMeta{
+		Kind:       m.Kind,
+		StartTs:    m.StartTs,
+		EndTs:      m.EndTs,
+		ErrMsg:     m.ErrMsg,
+		Finished:   m.Finished,
+		Total:      m.Total,
+		Dispatched: m.Dispatched,
+		Done:       m.Done,
+		TaskMetas:  tmetas,
+	}
 }
 
 type JobCtx struct {
 	curJob          task.Job
-	finish          chan struct{}
+	shouldFinish    chan struct{}
 	todoTasks       chan *task.TaskSpec
 	reassignedTasks chan *task.TaskSpec
 	// Following fields under mutex protection
-	mutex     sync.Mutex
-	err       error
-	taskMetas map[string]*TaskMeta
-	taskStats *TaskStats
+	mutex   sync.Mutex
+	jobMeta *JobMeta
 }
 
-func (ctx *JobCtx) reset() {
+func (ctx *JobCtx) start() {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	log.Info("Reset job ctx")
-	jobctx.err = nil
-	jobctx.finish = make(chan struct{})
-	jobctx.todoTasks = make(chan *task.TaskSpec, BUF_TASK_CNT)
-	jobctx.reassignedTasks = make(chan *task.TaskSpec, BUF_TASK_CNT)
-	jobctx.taskMetas = make(map[string]*TaskMeta)
-	ctx.taskStats = new(TaskStats)
+	ctx.shouldFinish = make(chan struct{})
+	ctx.todoTasks = make(chan *task.TaskSpec, BUF_TASK_CNT)
+	ctx.reassignedTasks = make(chan *task.TaskSpec, BUF_TASK_CNT)
+	ctx.jobMeta = new(JobMeta).Init()
+	ctx.jobMeta.StartTs = time.Now()
+}
+
+func (ctx *JobCtx) finish() {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	ctx.jobMeta.EndTs = time.Now()
+	ctx.jobMeta.Finished = true
 }
 
 func (ctx *JobCtx) assignJob(job task.Job) error {
@@ -66,9 +210,10 @@ func (ctx *JobCtx) assignJob(job task.Job) error {
 		log.Error(err.Error())
 		return err
 	}
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	ctx.curJob = job
-	ctx.taskStats.total = job.CalcTaskCnt()
-	log.Info("Total task count %d", jobctx.taskStats.total)
+	ctx.jobMeta.setJob(job)
 	return nil
 }
 
@@ -76,14 +221,14 @@ func (ctx *JobCtx) setErr(err error) {
 	log.Info("Set err %v to job ctx", err)
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	ctx.err = err
-	ctx.finish <- struct{}{}
+	ctx.jobMeta.setErr(err)
+	ctx.shouldFinish <- struct{}{}
 }
 
 func (ctx *JobCtx) aborted() bool {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	if ctx.err != nil {
+	if ctx.jobMeta.getErr() != nil {
 		return true
 	} else {
 		return false
@@ -93,88 +238,114 @@ func (ctx *JobCtx) aborted() bool {
 func (ctx *JobCtx) addTaskMeta(tspec *task.TaskSpec) {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	m := &TaskMeta{
-		Tid:   tspec.Tid,
-		Kind:  tspec.Kind,
-		tspec: tspec,
-	}
-	if _, ok := ctx.taskMetas[tspec.Tid]; ok {
-		log.Error("Task %q meta already set", tspec.Tid)
-	}
-	ctx.taskMetas[tspec.Tid] = m
+	ctx.jobMeta.addTaskMeta(tspec)
 }
 
 func (ctx *JobCtx) getTaskMeta(tid string) *TaskMeta {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	if m, ok := ctx.taskMetas[tid]; !ok {
-		log.Error("Task %q meta not found", tid)
-		return nil
-	} else {
-		return m
-	}
+	return ctx.jobMeta.getTaskMeta(tid)
 }
 
-func (ctx *JobCtx) updateTaskMetaForWorker(tid, workerAddr string) {
+func (ctx *JobCtx) getTaskReports() []*task.TaskReport {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	m, ok := ctx.taskMetas[tid]
-	if !ok {
+	reports := make([]*task.TaskReport, 0)
+	for _, tmeta := range ctx.jobMeta.taskMetas {
+		reports = append(reports, tmeta.report)
+	}
+	return reports
+}
+
+func (ctx *JobCtx) updateTaskMetaForWorker(tid, workerLabel string) {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	tmeta := ctx.jobMeta.getTaskMeta(tid)
+	if tmeta == nil {
 		log.Error("Task %q meta info not found", tid)
 		return
 	}
-	m.WorkerAddr = workerAddr
+	tmeta.WorkerLabel = workerLabel
+	tmeta.Dispatched = true
 }
 
-func (ctx *JobCtx) updateTaskMetaForReport(report *task.TaskReport) {
+func (ctx *JobCtx) addTaskReport(report *task.TaskReport) {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	m, ok := ctx.taskMetas[report.Tid]
-	if !ok {
-		log.Error("Task %q meta info not found", report.Tid)
-		return
-	}
-	if report.Err == "" {
-		m.StartTs = report.StartTs
-		m.EndTs = report.EndTs
-		m.report = report
-	} else {
-		m.ErrCnt++
-		m.ErrMsg = report.Err
-	}
+	ctx.jobMeta.addTaskReport(report)
+}
+
+func (ctx *JobCtx) updateTaskStatus(status *task.TaskStatus) {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	ctx.jobMeta.updateTaskStatus(status)
 }
 
 func (ctx *JobCtx) getTaskErr(tid string) (int, string) {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	m, ok := ctx.taskMetas[tid]
-	if !ok {
+	tmeta := ctx.jobMeta.getTaskMeta(tid)
+	if tmeta == nil {
 		log.Error("Task %q meta info not found", tid)
 		return 0, ""
 	}
-	return m.ErrCnt, m.ErrMsg
+	return tmeta.ErrCnt, tmeta.ErrMsg
 }
 
 func (ctx *JobCtx) incDispatched() {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	ctx.taskStats.disptached++
+	ctx.jobMeta.incDispatched()
 }
 
 func (ctx *JobCtx) incDone() {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	stats := ctx.taskStats
-	stats.done++
-	if stats.done == stats.total {
-		ctx.finish <- struct{}{}
+	ctx.jobMeta.incDone()
+	if ctx.jobMeta.allDone() {
+		ctx.shouldFinish <- struct{}{}
 	}
+}
+
+func (ctx *JobCtx) snapshotJobMeta() *JobMeta {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	if ctx.jobMeta == nil {
+		return nil
+	}
+	return ctx.jobMeta.snapshot()
+}
+
+func taskStatusHandler(w http.ResponseWriter, r *http.Request) {
+	key, err := getWorkerKeyFromReq(r)
+	if err != nil {
+		log.Error("Fail to get worker key, %v", err)
+		server.FmtResp(w, err, nil)
+		return
+	}
+	if err := wmgr.verifyWorkerKey(key); err != nil {
+		log.Error("Fail on verify worker key, %v", err)
+		server.FmtResp(w, err, nil)
+		return
+	}
+	status := new(task.TaskStatus)
+	if err := util.HttpFitRequestInto(r, status); err != nil {
+		log.Error("Fail to read task status, %v", err)
+		server.FmtResp(w, err, nil)
+		return
+	}
+	jobctx.updateTaskStatus(status)
 }
 
 func taskReportHandler(w http.ResponseWriter, r *http.Request) {
 	key, err := getWorkerKeyFromReq(r)
 	if err != nil {
 		log.Error("Fail to get worker key, %v", err)
+		server.FmtResp(w, err, nil)
+		return
+	}
+	if err := wmgr.verifyWorkerKey(key); err != nil {
+		log.Error("Fail on verify worker key, %v", err)
 		server.FmtResp(w, err, nil)
 		return
 	}
@@ -206,9 +377,8 @@ func handleTaskReport(key string, report *task.TaskReport) error {
 	} else {
 		jobctx.incDone()
 	}
-	if report.Err == "" {
-		jobctx.updateTaskMetaForReport(report)
-	} else {
+	jobctx.addTaskReport(report)
+	if report.Err != "" {
 		if m := jobctx.getTaskMeta(report.Tid); m != nil {
 			reassignTask(m.tspec)
 		}
@@ -241,14 +411,14 @@ func taskDispatcher(ctx *JobCtx) {
 			log.Info("Job ctx was set aborted, exit dispatcher!")
 			break
 		}
-		workerAddr, err := wmgr.dispatchTask(t)
+		workerName, err := wmgr.dispatchTask(t)
 		if err != nil {
 			jobctx.setErr(err)
 			log.Error("Fail to dispatch task %q, exit dispatcher, %v", t.Tid, err)
 			break
 		}
 		ctx.incDispatched()
-		ctx.updateTaskMetaForWorker(t.Tid, workerAddr)
+		ctx.updateTaskMetaForWorker(t.Tid, workerName)
 	}
 	log.Info("Exit dispatcher")
 }
@@ -266,8 +436,8 @@ func assignTasks(ctx *JobCtx, job task.Job) error {
 		select {
 		case jobctx.todoTasks <- tspec:
 			// do nothing
-		case <-ctx.finish:
-			return fmt.Errorf("Abort assign task, %v", ctx.err)
+		case <-ctx.shouldFinish:
+			return fmt.Errorf("Abort assign task, %v", ctx.jobMeta.getErr())
 		}
 		idx++
 	}
@@ -290,12 +460,14 @@ func reassignTask(tspec *task.TaskSpec) {
 func waitForJobDone(ctx *JobCtx) error {
 	log.Info("Wait for job %q done", ctx.curJob.GetKind())
 	select {
-	case <-ctx.finish:
+	case <-ctx.shouldFinish:
 		break
 	}
 	close(ctx.todoTasks)
 	close(ctx.reassignedTasks)
-	return ctx.err
+	err := ctx.jobMeta.getErr()
+	log.Info("Job %q done, err %v", ctx.curJob.GetKind())
+	return err
 }
 
 func generateTid(idx int) string {
@@ -304,10 +476,7 @@ func generateTid(idx int) string {
 
 func reduceTasks(ctx *JobCtx) error {
 	log.Info("Reduce tasks for job")
-	reports := make([]*task.TaskReport, 0)
-	for _, m := range ctx.taskMetas {
-		reports = append(reports, m.report)
-	}
+	reports := ctx.getTaskReports()
 	err := ctx.curJob.ReduceTasks(reports)
 	if err != nil {
 		log.Error("Fail to reduce task, %v", err)
@@ -328,9 +497,6 @@ func feedNextJobs(job task.Job) {
 
 func splitJobAndRun(job task.Job) error {
 	go taskDispatcher(jobctx)
-	if err := jobctx.assignJob(job); err != nil {
-		return err
-	}
 	if err := assignTasks(jobctx, job); err != nil {
 		return err
 	}
@@ -343,18 +509,27 @@ func splitJobAndRun(job task.Job) error {
 	return nil
 }
 
-func runJob(job task.Job) error {
+func jobRunner(job task.Job) error {
 	log.Info("Running job %q", job.GetKind())
-	jobctx.reset()
+	jobctx.start()
 	if err := jobctx.assignJob(job); err != nil {
 		return err
 	}
-	if jobctx.taskStats.total > 0 {
+	if jobctx.jobMeta.Total > 0 {
 		if err := splitJobAndRun(job); err != nil {
 			return err
 		}
 	}
+	jobctx.finish()
 	feedNextJobs(job)
 	log.Info("Run job %q done", job.GetKind())
 	return nil
+}
+
+func runJob(job task.Job) (*JobMeta, error) {
+	err := jobRunner(job)
+	if err != nil {
+		jobctx.setErr(err)
+	}
+	return jobctx.snapshotJobMeta(), err
 }

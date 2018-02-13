@@ -34,6 +34,7 @@ const (
 var wmgr = new(workerMgr)
 
 type Worker struct {
+	Label       string
 	Name        string
 	ip          string
 	port        int
@@ -97,8 +98,10 @@ func (mgr *workerMgr) registerWorker() (key string, err error) {
 		log.Info("Get worker key as %q, %v", key, err)
 	}()
 	key = fmt.Sprintf("%d-%d", time.Now().UnixNano(), mgr.regNum)
+	label := fmt.Sprintf("Worker#%03d", mgr.regNum)
 	mgr.regNum++
 	worker := &Worker{
+		Label:       label,
 		Key:         key,
 		Status:      WORKER_STATUS_PENDING,
 		StatusStart: time.Now(),
@@ -126,6 +129,15 @@ func (mgr *workerMgr) verifyWorker(form *workgroup.WorkerRegForm, key string) (e
 	//worker.Status = WORKER_STATUS_UNSTABLE
 	mgr.insertWorker(worker, &mgr.freeWorkers)
 	worker.Status = WORKER_STATUS_ACTIVE
+	return nil
+}
+
+func (mgr *workerMgr) verifyWorkerKey(key string) error {
+	mgr.mutex.Lock()
+	mgr.mutex.Unlock()
+	if _, ok := mgr.workers[key]; !ok {
+		return fmt.Errorf("Worker key %s not registered", key)
+	}
 	return nil
 }
 
@@ -258,7 +270,7 @@ func (mgr *workerMgr) dispatchTask(t *task.TaskSpec) (string, error) {
 		mgr.insertWorkerInlock(w, &mgr.unstableWorkers)
 	}
 	log.Info("Dispatch task %q successfully to %s", t.Tid, w.Name)
-	return w.Name, nil
+	return w.Label, nil
 }
 
 func (mgr *workerMgr) releaseWorker(w *Worker) (logMsg string) {

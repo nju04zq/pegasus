@@ -15,49 +15,86 @@ import (
 
 var projctx = new(ProjectCtx)
 
+type ProjMeta struct {
+	Name     string
+	StartTs  time.Time
+	EndTs    time.Time
+	err      error
+	ErrMsg   string
+	Finished bool
+	JobMetas []*JobMeta
+}
+
+func (pmeta *ProjMeta) init(projName string) *ProjMeta {
+	pmeta.Name = projName
+	return pmeta
+}
+
+func (pmeta *ProjMeta) insertJobMeta(jmeta *JobMeta) {
+	pmeta.JobMetas = append(pmeta.JobMetas, jmeta)
+}
+
+func (pmeta *ProjMeta) snapshot() *ProjMeta {
+	metas := make([]*JobMeta, len(pmeta.JobMetas))
+	for i, jmeta := range pmeta.JobMetas {
+		metas[i] = jmeta
+	}
+	return &ProjMeta{
+		Name:     pmeta.Name,
+		StartTs:  pmeta.StartTs,
+		EndTs:    pmeta.EndTs,
+		ErrMsg:   pmeta.ErrMsg,
+		Finished: pmeta.Finished,
+		JobMetas: metas,
+	}
+}
+
 type ProjectCtx struct {
 	idx int
 	// Following fields under mutex protection
 	mutex    sync.Mutex
-	finished bool
-	err      error
 	free     bool
-	startTs  time.Time
-	endTs    time.Time
-	pid      string
+	projId   string
 	proj     task.Project
+	projMeta *ProjMeta
+}
+
+func (ctx *ProjectCtx) init() {
+	ctx.free = true
 }
 
 func (ctx *ProjectCtx) start() {
-	ctx.startTs = time.Now()
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	ctx.projMeta = new(ProjMeta).init(ctx.proj.GetName())
+	ctx.projMeta.StartTs = time.Now()
 }
 
 func (ctx *ProjectCtx) checkAndUnsetFree(proj task.Project) (string, error) {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 	if !ctx.free {
-		return "", fmt.Errorf("Project %q in running", ctx.pid)
+		return "", fmt.Errorf("Project %q in running", ctx.projId)
 	}
 	ctx.free = false
 	ctx.proj = proj
-	ctx.pid = ctx.makeProjId()
-	return ctx.pid, nil
+	ctx.projId = ctx.makeProjId()
+	return ctx.projId, nil
 }
 
 func (ctx *ProjectCtx) setErr(err error) {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	ctx.err = err
-	ctx.finished = true
-	ctx.endTs = time.Now()
+	ctx.projMeta.err = err
+	ctx.projMeta.ErrMsg = err.Error()
+	ctx.finish()
 }
 
 func (ctx *ProjectCtx) finish() {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	ctx.finished = true
-	ctx.endTs = time.Now()
-	// TODO need to save history data
+	ctx.projMeta.Finished = true
+	ctx.projMeta.EndTs = time.Now()
 	ctx.free = true
 }
 
@@ -68,17 +105,33 @@ func (ctx *ProjectCtx) makeProjId() string {
 	return pid
 }
 
+func (ctx *ProjectCtx) insertJobMeta(jmeta *JobMeta) {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	ctx.projMeta.insertJobMeta(jmeta)
+}
+
+func (ctx *ProjectCtx) snapshotProjMeta() *ProjMeta {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	if ctx.projMeta == nil {
+		return nil
+	}
+	return ctx.projMeta.snapshot()
+}
+
 func projRunner() {
-	log.Info("Run project %q", projctx.pid)
+	log.Info("Run project %q", projctx.projId)
 	projctx.start()
 	proj := projctx.proj
 	if err := proj.Init(); err != nil {
 		projctx.setErr(err)
-		log.Info("Fail on project %q init, %v", projctx.pid, err)
+		log.Info("Fail on project %q init, %v", projctx.projId, err)
 		return
 	}
 	for _, job := range proj.GetJobs() {
-		err := runJob(job)
+		jmeta, err := runJob(job)
+		projctx.insertJobMeta(jmeta)
 		if err != nil {
 			err = fmt.Errorf("Fail on job %q, %v", job.GetKind(), err)
 			projctx.setErr(err)
@@ -87,20 +140,28 @@ func projRunner() {
 	}
 	if err := proj.Finish(); err != nil {
 		projctx.setErr(err)
-		log.Info("Fail on project %q finish, %v", projctx.pid, err)
+		log.Info("Fail on project %q finish, %v", projctx.projId, err)
 		return
 	}
 	projctx.finish()
-	log.Info("Run project %q finished", projctx.pid)
+	log.Info("Run project %q finished", projctx.projId)
 }
 
-func runProj(proj task.Project) (string, error) {
-	pid, err := projctx.checkAndUnsetFree(proj)
+type RunProjReceipt struct {
+	ErrMsg string
+	ProjId string
+}
+
+func runProj(proj task.Project) *RunProjReceipt {
+	projId, err := projctx.checkAndUnsetFree(proj)
 	if err != nil {
-		return "", err
+		return &RunProjReceipt{
+			ErrMsg: err.Error(),
+			ProjId: projId,
+		}
 	}
 	go projRunner()
-	return pid, nil
+	return &RunProjReceipt{ProjId: projId}
 }
 
 func runProjHandler(w http.ResponseWriter, r *http.Request) {
@@ -117,10 +178,25 @@ func runProjHandler(w http.ResponseWriter, r *http.Request) {
 		server.FmtResp(w, err, nil)
 		return
 	}
-	pid, err := runProj(proj)
-	server.FmtResp(w, err, pid)
+	receipt := runProj(proj)
+	server.FmtResp(w, nil, receipt)
+}
+
+func queryProjStatusHandler(w http.ResponseWriter, r *http.Request) {
+	pmeta := projctx.snapshotProjMeta()
+	jmeta := jobctx.snapshotJobMeta()
+	jmetas := pmeta.JobMetas
+	if len(jmetas) > 0 {
+		last := jmetas[len(jmetas)-1]
+		if last.Kind != jmeta.Kind && last.StartTs != jmeta.StartTs {
+			pmeta.JobMetas = append(pmeta.JobMetas, jmeta)
+		}
+	} else {
+		pmeta.JobMetas = append(pmeta.JobMetas, jmeta)
+	}
+	server.FmtResp(w, nil, pmeta)
 }
 
 func init() {
-	projctx.free = true
+	projctx.init()
 }

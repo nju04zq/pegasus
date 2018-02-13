@@ -2,20 +2,18 @@ package mergesort
 
 import (
 	"pegasus/task"
-	"time"
+)
+
+const (
+	PROJ_MERGESORT = "Mergesort"
 )
 
 type ProjMergesort struct {
-	err     error
-	name    string
-	startTs time.Time
-	endTs   time.Time
-	jobs    []task.Job
+	err  error
+	jobs []task.Job
 }
 
 func (proj *ProjMergesort) Init() error {
-	proj.name = "Mergesort"
-	proj.startTs = time.Now()
 	j0 := new(JobRandInts)
 	j1 := new(JobMergesort)
 	j2 := new(JobDumpres)
@@ -26,19 +24,11 @@ func (proj *ProjMergesort) Init() error {
 }
 
 func (proj *ProjMergesort) GetName() string {
-	return proj.name
+	return PROJ_MERGESORT
 }
 
 func (proj *ProjMergesort) GetJobs() []task.Job {
 	return proj.jobs
-}
-
-func (proj *ProjMergesort) GetStartTs() time.Time {
-	return proj.startTs
-}
-
-func (proj *ProjMergesort) GetEndTs() time.Time {
-	return proj.endTs
 }
 
 func (proj *ProjMergesort) SetErr(err error) {
@@ -50,6 +40,5 @@ func (proj *ProjMergesort) GetErr() error {
 }
 
 func (proj *ProjMergesort) Finish() error {
-	proj.endTs = time.Now()
 	return nil
 }

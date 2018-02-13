@@ -15,8 +15,6 @@ const (
 
 type JobDumpres struct {
 	input      []int
-	startTs    time.Time
-	endTs      time.Time
 	outputFile string
 }
 
@@ -41,14 +39,6 @@ func (job *JobDumpres) Init() error {
 	f.Write(buf)
 	log.Info("Job %q done, result file %q", job.GetKind(), fname)
 	return nil
-}
-
-func (job *JobDumpres) GetStartTs() time.Time {
-	return job.startTs
-}
-
-func (job *JobDumpres) GetEndTs() time.Time {
-	return job.endTs
 }
 
 func (job *JobDumpres) GetKind() string {

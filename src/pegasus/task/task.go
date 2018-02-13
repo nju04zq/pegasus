@@ -25,6 +25,14 @@ type Job interface {
 	GetTaskGen() TaskGenerator
 }
 
+type JobStatus struct {
+	Kind       string
+	Total      int
+	Dispatched int
+	Done       int
+	Detail     []*TaskStatus
+}
+
 const (
 	TaskStatusOk = iota
 	TaskStatusExpired
@@ -54,8 +62,7 @@ type Task interface {
 	NewTaskletCtx() TaskletCtx
 	GetTaskId() string
 	GetKind() string
-	GetStartTs() time.Time
-	GetEndTs() time.Time
+	GetDesc() string
 	GetTaskletCnt() int
 	GetNextTasklet(string) Tasklet
 	ReduceTasklets([]Tasklet)
@@ -66,8 +73,6 @@ type Task interface {
 
 type Tasklet interface {
 	GetTaskletId() string
-	GetStartTs() time.Time
-	GetEndTs() time.Time
 	Execute(TaskletCtx) error
 }
 
@@ -81,20 +86,15 @@ type TaskReport struct {
 	Kind    string
 	StartTs time.Time
 	EndTs   time.Time
+	Status  *TaskStatus
 	Output  interface{}
 }
 
-func GenerateTaskReport(tsk Task) *TaskReport {
-	errMsg := ""
-	if err := tsk.GetError(); err != nil {
-		errMsg = err.Error()
-	}
-	return &TaskReport{
-		Err:     errMsg,
-		Tid:     tsk.GetTaskId(),
-		Kind:    tsk.GetKind(),
-		StartTs: tsk.GetStartTs(),
-		EndTs:   tsk.GetEndTs(),
-		Output:  tsk.GetOutput(),
-	}
+type TaskStatus struct {
+	Tid      string
+	Desc     string
+	StartTs  time.Time
+	Finished bool
+	Total    int
+	Done     int
 }

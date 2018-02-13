@@ -16,8 +16,6 @@ const (
 
 type JobMergesort struct {
 	input     []int
-	startTs   time.Time
-	endTs     time.Time
 	total     int
 	nextStart int
 	tskSize   int
@@ -36,19 +34,10 @@ func (job *JobMergesort) AppendInput(input interface{}) {
 
 func (job *JobMergesort) Init() error {
 	job.total = len(job.input)
-	job.startTs = time.Now()
 	job.output = make([]int, 0)
 	job.tskSize = (job.total + SPLIT_SEGMENTS - 1) / SPLIT_SEGMENTS
 	log.Info("Job input %v, task size %d", job.input, job.tskSize)
 	return nil
-}
-
-func (job *JobMergesort) GetStartTs() time.Time {
-	return job.startTs
-}
-
-func (job *JobMergesort) GetEndTs() time.Time {
-	return job.endTs
 }
 
 func (job *JobMergesort) GetKind() string {
@@ -127,9 +116,6 @@ type taskMergesort struct {
 	err        error
 	tid        string
 	kind       string
-	desc       string
-	startTs    time.Time
-	endTs      time.Time
 	taskletCnt int
 	left       int
 	seq        []int
@@ -143,7 +129,6 @@ func (ctx *taskletMergsortCtx) Close() {
 }
 
 func (tsk *taskMergesort) Init(executorCnt int) error {
-	tsk.startTs = time.Now()
 	tsk.taskletCnt = 1
 	tsk.left = tsk.taskletCnt
 	return nil
@@ -162,16 +147,8 @@ func (tsk *taskMergesort) GetKind() string {
 	return tsk.kind
 }
 
-func (tsk *taskMergesort) GetStartTs() time.Time {
-	return tsk.startTs
-}
-
-func (tsk *taskMergesort) GetEndTs() time.Time {
-	return tsk.endTs
-}
-
 func (tsk *taskMergesort) GetDesc() string {
-	return tsk.desc
+	return JOB_KIND_MERGESORT
 }
 
 func (tsk *taskMergesort) GetTaskletCnt() int {
@@ -209,28 +186,16 @@ func (tsk *taskMergesort) GetOutput() interface{} {
 }
 
 type taskletMergesort struct {
-	tid     string
-	startTs time.Time
-	endTs   time.Time
-	seq     []int
+	tid string
+	seq []int
 }
 
 func (t *taskletMergesort) GetTaskletId() string {
 	return t.tid
 }
 
-func (t *taskletMergesort) GetStartTs() time.Time {
-	return t.startTs
-}
-
-func (t *taskletMergesort) GetEndTs() time.Time {
-	return t.endTs
-}
-
 func (t *taskletMergesort) Execute(ctx task.TaskletCtx) error {
-	t.startTs = time.Now()
 	sort.Ints(t.seq)
-	t.endTs = time.Now()
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(2 * time.Second)
 	return nil
 }

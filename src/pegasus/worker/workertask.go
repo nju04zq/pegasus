@@ -11,13 +11,16 @@ import (
 	"pegasus/uri"
 	"pegasus/util"
 	"sync"
+	"time"
 )
 
 var tskctx = &TaskCtx{}
 
 const (
-	BUF_TASKLET_CNT      = 8
-	RUNNING_EXECUTOR_CNT = 4
+	BUF_TASKLET_CNT = 8
+	// TODO test purpose
+	//RUNNING_EXECUTOR_CNT = 4
+	RUNNING_EXECUTOR_CNT = 2
 	TASKLET_MAX_RETRY    = 3
 )
 
@@ -28,9 +31,32 @@ type TaskCtx struct {
 	todoTasklets   chan task.Tasklet
 	doneTasklets   chan task.Tasklet
 	// Following fields under mutex protection
-	mutex sync.Mutex
-	free  bool
-	err   error
+	mutex    sync.Mutex
+	err      error
+	free     bool
+	total    int
+	done     int
+	finished bool
+	startTs  time.Time
+	endTs    time.Time
+}
+
+func (ctx *TaskCtx) kickoff() {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	ctx.startTs = time.Now()
+	ctx.err = nil
+	ctx.total = 0
+	ctx.done = 0
+	ctx.finished = false
+	ctx.endTs = time.Time{}
+}
+
+func (ctx *TaskCtx) finish() {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	ctx.finished = true
+	ctx.endTs = time.Now()
 }
 
 func (ctx *TaskCtx) init() {
@@ -39,7 +65,10 @@ func (ctx *TaskCtx) init() {
 	ctx.todoTasklets = make(chan task.Tasklet, BUF_TASKLET_CNT)
 	ctx.doneTasklets = make(chan task.Tasklet, taskletCnt)
 	ctx.taskletCtxList = make([]task.TaskletCtx, 0)
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
 	ctx.err = nil
+	ctx.total = taskletCnt
 }
 
 func (ctx *TaskCtx) aborted() bool {
@@ -77,13 +106,36 @@ func (ctx *TaskCtx) setFree() {
 	ctx.tsk = nil
 }
 
-func getTaskletCnt() int {
+func (ctx *TaskCtx) appendDoneTasklet(tasklet task.Tasklet) {
+	ctx.doneTasklets <- tasklet
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	ctx.done++
+}
+
+func (ctx *TaskCtx) getTaskStatus() *task.TaskStatus {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	if ctx.free {
+		return nil
+	}
+	return &task.TaskStatus{
+		Tid:      ctx.tsk.GetTaskId(),
+		Desc:     ctx.tsk.GetDesc(),
+		StartTs:  ctx.startTs,
+		Finished: ctx.finished,
+		Total:    ctx.total,
+		Done:     ctx.done,
+	}
+}
+
+func getExecutorCnt() int {
 	return RUNNING_EXECUTOR_CNT
 }
 
 func prepareExecutors(ctx *TaskCtx, tsk task.Task) {
-	taskletCnt := getTaskletCnt()
-	for i := 0; i < taskletCnt; i++ {
+	cnt := getExecutorCnt()
+	for i := 0; i < cnt; i++ {
 		c := tsk.NewTaskletCtx()
 		ctx.wgFinish.Add(1)
 		go taskletExecutor(i, ctx, c)
@@ -105,6 +157,7 @@ func waitForTaskDone(ctx *TaskCtx) {
 
 func handleTaskReq(tsk task.Task) {
 	log.Info("Dealing with task %q", tsk.GetTaskId())
+	tskctx.kickoff()
 	if err := tsk.Init(RUNNING_EXECUTOR_CNT); err == nil {
 		tskctx.init()
 		prepareExecutors(tskctx, tsk)
@@ -120,7 +173,8 @@ func handleTaskReq(tsk task.Task) {
 	} else {
 		reduceTasklets(tsk, tskctx)
 	}
-	report := task.GenerateTaskReport(tsk)
+	tskctx.finish()
+	report := generateTaskReport(tskctx)
 	tskctx.setFree()
 	go sendTaskReport(report)
 }
@@ -173,7 +227,7 @@ func taskletExecutor(eid int, ctx *TaskCtx, c task.TaskletCtx) {
 			tskctx.setErr(err)
 			break
 		}
-		ctx.doneTasklets <- tasklet
+		ctx.appendDoneTasklet(tasklet)
 	}
 	log.Info("Executor #%d, exit", eid)
 }
@@ -190,6 +244,24 @@ func reduceTasklets(tsk task.Task, ctx *TaskCtx) {
 		tasklets = append(tasklets, tasklet)
 	}
 	tsk.ReduceTasklets(tasklets)
+}
+
+func generateTaskReport(ctx *TaskCtx) *task.TaskReport {
+	tsk := ctx.tsk
+	status := ctx.getTaskStatus()
+	errMsg := ""
+	if err := tsk.GetError(); err != nil {
+		errMsg = err.Error()
+	}
+	return &task.TaskReport{
+		Err:     errMsg,
+		Tid:     tsk.GetTaskId(),
+		Kind:    tsk.GetKind(),
+		StartTs: ctx.startTs,
+		EndTs:   ctx.endTs,
+		Status:  status,
+		Output:  tsk.GetOutput(),
+	}
 }
 
 func sendTaskReport(report *task.TaskReport) {
@@ -254,6 +326,17 @@ func taskRecipiantHandler(w http.ResponseWriter, r *http.Request) {
 		log.Info("Can't recieve task %q, %v", tspec.Tid, err)
 	}
 	server.FmtResp(w, err, "")
+}
+
+func reportTaskStatus() {
+	taskStatus := tskctx.getTaskStatus()
+	if taskStatus == nil {
+		return
+	}
+	u := workerSelf.makeMasterUrl(uri.MasterWorkerTaskStatusUri)
+	if _, err := util.HttpPostData(u, taskStatus); err != nil {
+		log.Error("Fail to post task status, %v", err)
+	}
 }
 
 func init() {

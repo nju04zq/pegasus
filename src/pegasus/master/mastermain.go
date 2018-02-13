@@ -152,6 +152,18 @@ func registerRoutes() {
 		Handler: runProjHandler,
 	})
 	route.RegisterRoute(&route.Route{
+		Name:    "taskStatusHandler",
+		Method:  http.MethodPost,
+		Path:    uri.MasterWorkerTaskStatusUri,
+		Handler: taskStatusHandler,
+	})
+	route.RegisterRoute(&route.Route{
+		Name:    "queryProjStatusHandler",
+		Method:  http.MethodGet,
+		Path:    uri.MasterProjectStatusUri,
+		Handler: queryProjStatusHandler,
+	})
+	route.RegisterRoute(&route.Route{
 		Name:    "testHandler",
 		Method:  http.MethodPost,
 		Path:    uri.MasterTestUri,
