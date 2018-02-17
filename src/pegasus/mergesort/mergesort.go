@@ -148,7 +148,7 @@ func (tsk *taskMergesort) GetKind() string {
 }
 
 func (tsk *taskMergesort) GetDesc() string {
-	return JOB_KIND_MERGESORT
+	return tsk.kind
 }
 
 func (tsk *taskMergesort) GetTaskletCnt() int {

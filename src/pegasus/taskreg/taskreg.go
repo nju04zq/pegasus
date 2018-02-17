@@ -2,6 +2,7 @@ package taskreg
 
 import (
 	"fmt"
+	"pegasus/lianjia"
 	"pegasus/mergesort"
 	"pegasus/task"
 	"reflect"
@@ -54,4 +55,5 @@ func GetTaskGenerator(kind string) task.TaskGenerator {
 
 func init() {
 	register(new(mergesort.ProjMergesort))
+	register(new(lianjia.ProjLianjia))
 }

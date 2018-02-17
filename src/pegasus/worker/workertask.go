@@ -139,7 +139,9 @@ func prepareExecutors(ctx *TaskCtx, tsk task.Task) {
 		c := tsk.NewTaskletCtx()
 		ctx.wgFinish.Add(1)
 		go taskletExecutor(i, ctx, c)
-		ctx.taskletCtxList = append(ctx.taskletCtxList, c)
+		if c != nil {
+			ctx.taskletCtxList = append(ctx.taskletCtxList, c)
+		}
 	}
 }
 
