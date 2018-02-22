@@ -3,8 +3,11 @@ package lianjia
 import (
 	"fmt"
 	"pegasus/log"
+	"pegasus/rate"
 	"pegasus/task"
 	"pegasus/util"
+	"pegasus/workgroup"
+	"strings"
 
 	"github.com/anaskhan96/soup"
 )
@@ -18,18 +21,27 @@ type Region struct {
 	Name    string
 	Uri     string
 	Abbr    string
-	DistUri string
+	MaxPage int
+	Dists   []*District
 }
 
-func (r *Region) str() string {
-	return fmt.Sprintf("%q, %q, %q, %q", r.Name, r.Uri, r.Abbr, r.DistUri)
+func (r *Region) String() string {
+	names := make([]string, len(r.Dists))
+	for i, d := range r.Dists {
+		names[i] = d.Name
+	}
+	return fmt.Sprintf("%q, %q, %q, %d, %s",
+		r.Name, r.Uri, r.Abbr, r.MaxPage, strings.Join(names, ","))
 }
 
 type JobRegions struct {
 	districts []*District
 	taskSize  int
+	grpSize   int
 	nextDist  int
 	regions   []*Region
+	regionTbl map[string]*Region
+	nextJobs  []*JobRegionMaxpage
 }
 
 func (job *JobRegions) AppendInput(input interface{}) {
@@ -38,7 +50,7 @@ func (job *JobRegions) AppendInput(input interface{}) {
 		job.districts = make([]*District, 0)
 	}
 	for _, d := range a {
-		if d.Uri != "/ershoufang/shanghaizhoubian/" {
+		if d.Abbr != "shanghaizhoubian" {
 			job.districts = append(job.districts, d)
 		}
 	}
@@ -46,6 +58,11 @@ func (job *JobRegions) AppendInput(input interface{}) {
 
 func (job *JobRegions) Init() error {
 	job.taskSize = len(job.districts)
+	job.grpSize = workgroup.WgCfg.WorkerExecutorCnt
+	if job.grpSize <= 0 {
+		return fmt.Errorf("WorkerExecutorCnt <= 0")
+	}
+	job.regionTbl = make(map[string]*Region)
 	return nil
 }
 
@@ -54,17 +71,23 @@ func (job *JobRegions) GetKind() string {
 }
 
 func (job *JobRegions) CalcTaskCnt() int {
-	return job.taskSize
+	return (job.taskSize + job.grpSize - 1) / job.grpSize
 }
 
 func (job *JobRegions) GetNextTask(tid string) *task.TaskSpec {
 	if job.nextDist >= job.taskSize {
 		return nil
 	}
-	spec := &tspecRegions{
-		DistUri: job.districts[job.nextDist].Uri,
+	districts := make([]*District, 0, job.grpSize)
+	i := job.nextDist
+	end := util.Min(i+job.grpSize, job.taskSize)
+	for ; i < end; i++ {
+		districts = append(districts, job.districts[i])
 	}
-	job.nextDist++
+	spec := &tspecRegions{
+		Districts: districts,
+	}
+	job.nextDist = end
 	return &task.TaskSpec{
 		Tid:  tid,
 		Kind: TASK_KIND_REGIONS,
@@ -78,21 +101,29 @@ func (job *JobRegions) ReduceTasks(reports []*task.TaskReport) error {
 		if err := util.FitDataInto(report.Output, &regions); err != nil {
 			return err
 		}
-		job.regions = append(job.regions, regions...)
+		for _, r := range regions {
+			region, ok := job.regionTbl[r.Abbr]
+			if ok {
+				region.Dists = append(region.Dists, r.Dists...)
+			} else {
+				job.regions = append(job.regions, r)
+				job.regionTbl[r.Abbr] = r
+			}
+		}
 	}
 	return nil
 }
 
 func (job *JobRegions) GetOutput() interface{} {
-	log.Info("Get %d regions as:", len(job.regions))
-	for _, r := range job.regions {
-		log.Info(r.str())
-	}
-	return nil
+	return job.regions
 }
 
 func (job *JobRegions) GetNextJobs() []task.Job {
-	return nil
+	jobs := make([]task.Job, 0, len(job.nextJobs))
+	for _, j := range job.nextJobs {
+		jobs = append(jobs, j)
+	}
+	return jobs
 }
 
 func (job *JobRegions) GetTaskGen() task.TaskGenerator {
@@ -100,7 +131,7 @@ func (job *JobRegions) GetTaskGen() task.TaskGenerator {
 }
 
 type tspecRegions struct {
-	DistUri string
+	Districts []*District
 }
 
 func TaskGenRegions(tspec *task.TaskSpec) (task.Task, error) {
@@ -109,22 +140,28 @@ func TaskGenRegions(tspec *task.TaskSpec) (task.Task, error) {
 	tsk.kind = tspec.Kind
 	spec := new(tspecRegions)
 	task.DecodeSpec(tspec, spec)
-	tsk.distUri = spec.DistUri
-	tsk.desc = fmt.Sprintf("Regions %s", tsk.distUri)
+	tsk.districts = spec.Districts
+	names := make([]string, len(tsk.districts))
+	for i, d := range tsk.districts {
+		names[i] = d.Name
+	}
+	tsk.desc = fmt.Sprintf("Regions from %s", strings.Join(names, ","))
 	return tsk, nil
 }
 
 type taskRegions struct {
-	err     error
-	tid     string
-	kind    string
-	desc    string
-	distUri string
-	done    bool
-	regions []*Region
+	err       error
+	tid       string
+	kind      string
+	desc      string
+	districts []*District
+	nextDist  int
+	totalDist int
+	regions   []*Region
 }
 
 func (tsk *taskRegions) Init(executorCnt int) error {
+	tsk.totalDist = len(tsk.districts)
 	return nil
 }
 
@@ -145,23 +182,25 @@ func (tsk *taskRegions) GetDesc() string {
 }
 
 func (tsk *taskRegions) GetTaskletCnt() int {
-	return 1
+	return tsk.totalDist
 }
 
 func (tsk *taskRegions) GetNextTasklet(taskletid string) task.Tasklet {
-	if tsk.done {
+	if tsk.nextDist >= tsk.totalDist {
 		return nil
 	}
-	tsk.done = true
-	return &taskletRegions{
-		distUri: tsk.distUri,
+	t := &taskletRegions{
+		tid:      taskletid,
+		district: tsk.districts[tsk.nextDist],
 	}
+	tsk.nextDist++
+	return t
 }
 
 func (tsk *taskRegions) ReduceTasklets(tasklets []task.Tasklet) {
 	for _, t := range tasklets {
 		tasklet := t.(*taskletRegions)
-		tsk.regions = tasklet.regions
+		tsk.regions = append(tsk.regions, tasklet.regions...)
 	}
 }
 
@@ -178,48 +217,56 @@ func (tsk *taskRegions) GetOutput() interface{} {
 }
 
 type taskletRegions struct {
-	tid     string
-	distUri string
-	regions []*Region
+	tid      string
+	district *District
+	regions  []*Region
 }
 
 func (t *taskletRegions) GetTaskletId() string {
 	return t.tid
 }
 
-func (t *taskletRegions) Execute(ctx task.TaskletCtx) error {
-	link := distLink(t.distUri)
-	log.Info("Get regions from link %q", link)
-	resp, err := soup.Get(link)
-	if err != nil {
-		return fmt.Errorf("Fail to get from %q, %v", link, err)
-	}
+func (t *taskletRegions) parse(resp string) error {
 	doc := soup.HTMLParse(resp)
-	tags := doc.FindAll("div", "data-role", "ershoufang")
-	if len(tags) == 0 {
-		return fmt.Errorf("No districts detected!")
-	} else if len(tags) > 1 {
-		return fmt.Errorf("Too many <div data-role> found!")
+	tags, err := findAll(&doc, 1, 1, "div", "data-role", "ershoufang")
+	if err != nil {
+		return err
 	}
-	tags = tags[0].FindAll("div")
-	if len(tags) == 0 {
-		return fmt.Errorf("No districts <div> detected!")
-	} else if len(tags) != 2 {
-		return fmt.Errorf("districts <div> mismatch count 2!")
+	tags, err = findAll(&tags[0], 2, 2, "div")
+	if err != nil {
+		return err
 	}
-	tags = tags[1].FindAll("a")
-	if len(tags) == 0 {
-		return fmt.Errorf("No regions found for %q", link)
+	tags, err = findAll(&tags[1], 1, -1, "a")
+	if err != nil {
+		return err
 	}
 	for _, tag := range tags {
+		uri := tag.Attrs()["href"]
+		abbr, err := parseAbbr(uri)
+		if err != nil {
+			return err
+		}
 		r := &Region{
-			Name:    tag.Text(),
-			Uri:     tag.Attrs()["href"],
-			Abbr:    "",
-			DistUri: t.distUri,
+			Name:  tag.Text(),
+			Uri:   tag.Attrs()["href"],
+			Abbr:  abbr,
+			Dists: []*District{t.district},
 		}
 		log.Info("Get region %q, %q", r.Name, r.Uri)
 		t.regions = append(t.regions, r)
+	}
+	return nil
+}
+
+func (t *taskletRegions) Execute(ctx task.TaskletCtx) error {
+	link := distLink(t.district)
+	log.Info("Get regions from link %q", link)
+	resp, err := rate.GetHtml(link)
+	if err != nil {
+		return fmt.Errorf("Fail to get regions from %q, %v", link, err)
+	}
+	if err := t.parse(resp); err != nil {
+		return fmt.Errorf("Fail to get regions from %q, %v", link, err)
 	}
 	return nil
 }

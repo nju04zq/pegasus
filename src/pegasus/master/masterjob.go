@@ -218,7 +218,7 @@ func (ctx *JobCtx) assignJob(job task.Job) error {
 }
 
 func (ctx *JobCtx) setErr(err error) {
-	log.Info("Set err %v to job ctx", err)
+	log.Info("Set err %q to job ctx", err)
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 	ctx.jobMeta.setErr(err)
@@ -466,7 +466,7 @@ func waitForJobDone(ctx *JobCtx) error {
 	close(ctx.todoTasks)
 	close(ctx.reassignedTasks)
 	err := ctx.jobMeta.getErr()
-	log.Info("Job %q done, err %v", ctx.curJob.GetKind())
+	log.Info("Job %q done, err %v", ctx.curJob.GetKind(), err)
 	return err
 }
 

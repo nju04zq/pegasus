@@ -1,6 +1,7 @@
 {
-  "pegasus.dummypkg.Dummy": {
-    "Field1": 12,
-    "Field2": "abc"
+  "pegasus.workgroup.WorkgroupCfg": {
+    "DataPath": "/tmp",
+    "LogPath": "/tmp",
+    "WorkerExecutorCnt": 2
   }
 }

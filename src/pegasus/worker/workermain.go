@@ -7,6 +7,7 @@ import (
 	"os"
 	"pegasus/cfgmgr"
 	"pegasus/log"
+	"pegasus/rate"
 	"pegasus/route"
 	"pegasus/server"
 	"pegasus/uri"
@@ -204,5 +205,6 @@ func main() {
 	if err := startHb(); err != nil {
 		panic(err)
 	}
+	rate.InitAsWorker(workerSelf.masterIp, workerSelf.masterPort)
 	panic(workerSelf.workerServer.Serve())
 }

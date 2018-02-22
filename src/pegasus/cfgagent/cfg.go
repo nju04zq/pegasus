@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"net/http"
 	"pegasus/cfgmgr"
-	"pegasus/dummypkg"
 	"pegasus/log"
 	"pegasus/route"
 	"pegasus/server"
 	"pegasus/uri"
 	"pegasus/util"
+	"pegasus/workgroup"
 
 	"github.com/gorilla/mux"
 )
+
+var cfgFpath = "./cfg.json"
 
 func getCfg(cfgPath string) (interface{}, error) {
 	return cfgmgr.GetCfg(cfgPath)
@@ -24,6 +26,11 @@ func getCfgHandler(w http.ResponseWriter, r *http.Request) {
 	log.Info("Get cfg from %s for %s", r.RemoteAddr, cfgPath)
 	s, err := getCfg(cfgPath)
 	server.FmtResp(w, err, s)
+}
+
+func flushCfgHandler(w http.ResponseWriter, r *http.Request) {
+	err := cfgmgr.SaveCfgToJson(cfgFpath)
+	server.FmtResp(w, err, nil)
 }
 
 func cfgPingHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +56,12 @@ func registerRoutes() {
 		Method:  http.MethodGet,
 		Path:    uri.CfgUriRoot + "{cfgPath}",
 		Handler: getCfgHandler,
+	})
+	route.RegisterRoute(&route.Route{
+		Name:    "flushCfgHandler",
+		Method:  http.MethodPost,
+		Path:    uri.CfgUriRoot,
+		Handler: flushCfgHandler,
 	})
 	route.RegisterRoute(&route.Route{
 		Name:    "cfgPingHandler",
@@ -102,11 +115,12 @@ func initLogger() error {
 }
 
 func registerCfg() {
-	dummypkg.RegisterCfg()
+	//dummypkg.RegisterCfg()
+	workgroup.RegisterCfg()
 }
 
 func loadCfgFromFile() {
-	if err := cfgmgr.LoadCfgFromFile("./cfg.json"); err != nil {
+	if err := cfgmgr.LoadCfgFromFile(cfgFpath); err != nil {
 		panic(err)
 	}
 }

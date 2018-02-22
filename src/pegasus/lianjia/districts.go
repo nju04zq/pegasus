@@ -3,6 +3,7 @@ package lianjia
 import (
 	"fmt"
 	"pegasus/log"
+	"pegasus/rate"
 	"pegasus/task"
 
 	"github.com/anaskhan96/soup"
@@ -14,7 +15,7 @@ const (
 
 type District struct {
 	Name string
-	Uri  string
+	Abbr string
 }
 
 type JobDistricts struct {
@@ -29,27 +30,30 @@ func (job *JobDistricts) AppendInput(input interface{}) {
 func (job *JobDistricts) Init() error {
 	job.districts = make([]*District, 0)
 	link := ERSHOUFANG_LINK
-	resp, err := soup.Get(link)
+	resp, err := rate.GetHtml(link)
 	if err != nil {
 		return fmt.Errorf("Fail to get from %q, %v", link, err)
 	}
 	doc := soup.HTMLParse(resp)
-	tags := doc.FindAll("div", "data-role", "ershoufang")
-	if len(tags) == 0 {
-		return fmt.Errorf("No districts detected!")
-	} else if len(tags) > 1 {
-		return fmt.Errorf("Too many <div data-role> found!")
+	tags, err := findAll(&doc, 1, 1, "div", "data-role", "ershoufang")
+	if err != nil {
+		return err
 	}
-	tags = tags[0].FindAll("a")
-	if len(tags) == 0 {
-		return fmt.Errorf("No districts detected!")
+	tags, err = findAll(&tags[0], 1, -1, "a")
+	if err != nil {
+		return err
 	}
 	for _, tag := range tags {
+		uri := tag.Attrs()["href"]
+		abbr, err := parseAbbr(uri)
+		if err != nil {
+			return err
+		}
 		d := &District{
 			Name: tag.Text(),
-			Uri:  tag.Attrs()["href"],
+			Abbr: abbr,
 		}
-		log.Info("Get district %q, %q", d.Name, d.Uri)
+		log.Info("Get district %q, %q", d.Name, d.Abbr)
 		job.districts = append(job.districts, d)
 	}
 	return nil

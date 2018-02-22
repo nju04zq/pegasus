@@ -6,10 +6,12 @@ import (
 	"os"
 	"pegasus/cfgmgr"
 	"pegasus/log"
+	"pegasus/rate"
 	"pegasus/route"
 	"pegasus/server"
 	"pegasus/uri"
 	"pegasus/util"
+	"pegasus/workgroup"
 	"strings"
 )
 
@@ -195,5 +197,9 @@ func main() {
 	if err := registerOnCfgServer(); err != nil {
 		panic(err)
 	}
+	if err := workgroup.InitWorkgroup(cfgServerIP); err != nil {
+		panic(err)
+	}
+	rate.InitAsMaster()
 	panic(masterSelf.masterServer.Serve())
 }

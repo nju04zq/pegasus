@@ -1,6 +1,10 @@
 package lianjia
 
-import "pegasus/task"
+import (
+	"pegasus/log"
+	"pegasus/rate"
+	"pegasus/task"
+)
 
 const (
 	PROJ_LIANJIA = "Lianjia-Crawler"
@@ -14,8 +18,10 @@ type ProjLianjia struct {
 func (proj *ProjLianjia) Init() error {
 	j0 := new(JobDistricts)
 	j1 := new(JobRegions)
+	j2 := new(JobRegionMaxpage)
 	j0.nextJobs = []*JobRegions{j1}
-	proj.jobs = []task.Job{j0, j1}
+	j1.nextJobs = []*JobRegionMaxpage{j2}
+	proj.jobs = []task.Job{j0, j1, j2}
 	return nil
 }
 
@@ -36,5 +42,6 @@ func (proj *ProjLianjia) GetErr() error {
 }
 
 func (proj *ProjLianjia) Finish() error {
+	log.Info(rate.Summary())
 	return nil
 }

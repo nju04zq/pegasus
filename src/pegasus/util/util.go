@@ -9,8 +9,16 @@ import (
 	"time"
 )
 
-func max(a, b int) int {
+func Max(a, b int) int {
 	if a > b {
+		return a
+	} else {
+		return b
+	}
+}
+
+func Min(a, b int) int {
+	if a < b {
 		return a
 	} else {
 		return b
@@ -68,7 +76,7 @@ func (t *PrettyTable) Init(header []string) {
 func (t *PrettyTable) AppendLine(line []string) {
 	t.lines = append(t.lines, line)
 	for i, s := range line {
-		t.colMaxWidth[i] = max(t.colMaxWidth[i], len(s))
+		t.colMaxWidth[i] = Max(t.colMaxWidth[i], len(s))
 	}
 }
 
