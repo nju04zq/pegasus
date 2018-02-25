@@ -19,9 +19,11 @@ func (proj *ProjLianjia) Init() error {
 	j0 := new(JobDistricts)
 	j1 := new(JobRegions)
 	j2 := new(JobRegionMaxpage)
+	j3 := new(JobGetApartments)
 	j0.nextJobs = []*JobRegions{j1}
 	j1.nextJobs = []*JobRegionMaxpage{j2}
-	proj.jobs = []task.Job{j0, j1, j2}
+	j2.nextJobs = []*JobGetApartments{j3}
+	proj.jobs = []task.Job{j0, j1, j2, j3}
 	return nil
 }
 

@@ -14,8 +14,13 @@ func distLink(d *District) string {
 	return fmt.Sprintf("%s%s/", ERSHOUFANG_LINK, d.Abbr)
 }
 
-func regionLink(regionUri string) string {
-	return fmt.Sprintf("%s%s", LIANJIA_LINK, regionUri)
+func regionLink(r *Region) string {
+	return fmt.Sprintf("%s%s", ERSHOUFANG_LINK, r.Abbr)
+}
+
+func regionPgLink(r *Region, page int) string {
+	link := regionLink(r)
+	return fmt.Sprintf("%s/pg%d", link, page)
 }
 
 func parseAbbr(uri string) (string, error) {
@@ -29,4 +34,17 @@ func parseAbbr(uri string) (string, error) {
 		return "", fmt.Errorf("Region URI %q not has 2 toks", uri)
 	}
 	return toks[1], nil
+}
+
+func getAidFromHref(href string) (string, error) {
+	if !strings.HasPrefix(href, ERSHOUFANG_LINK) {
+		return "", fmt.Errorf("Apartment href %q not starts with %q", href, ERSHOUFANG_LINK)
+	}
+	html := ".html"
+	if !strings.HasSuffix(href, html) {
+		return "", fmt.Errorf("Apartment href %q not ends with %q", href, html)
+	}
+	href = strings.TrimPrefix(href, ERSHOUFANG_LINK)
+	href = strings.TrimSuffix(href, html)
+	return href, nil
 }

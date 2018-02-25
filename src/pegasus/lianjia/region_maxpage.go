@@ -26,6 +26,7 @@ type JobRegionMaxpage struct {
 	grpSize    int
 	nextRegion int
 	totalPages int
+	nextJobs   []*JobGetApartments
 }
 
 func (job *JobRegionMaxpage) AppendInput(input interface{}) {
@@ -106,11 +107,15 @@ func (job *JobRegionMaxpage) GetOutput() interface{} {
 	for _, r := range job.regions {
 		log.Info(r.String())
 	}
-	return nil
+	return job.regions
 }
 
 func (job *JobRegionMaxpage) GetNextJobs() []task.Job {
-	return nil
+	jobs := make([]task.Job, 0, len(job.nextJobs))
+	for _, j := range job.nextJobs {
+		jobs = append(jobs, j)
+	}
+	return jobs
 }
 
 func (job *JobRegionMaxpage) GetTaskGen() task.TaskGenerator {
@@ -208,29 +213,8 @@ func (t *taskletRegionMaxpage) GetTaskletId() string {
 	return t.tid
 }
 
-func (t *taskletRegionMaxpage) parse(resp string) error {
-	doc := soup.HTMLParse(resp)
-	tags, err := findAll(&doc, 0, 1, "div", "class", "page-box house-lst-page-box")
-	if err != nil {
-		return err
-	} else if len(tags) == 0 {
-		return nil
-	}
-	re := regexp.MustCompile(`"totalPage":(\d+)`)
-	res := re.FindStringSubmatch(tags[0].Attrs()["page-data"])
-	if len(res) == 0 {
-		return fmt.Errorf("maxpage not found")
-	}
-	maxpage, err := strconv.ParseInt(res[1], 10, 32)
-	if err != nil {
-		return fmt.Errorf("maxpage %q not int", res[1])
-	}
-	t.region.MaxPage = int(maxpage)
-	return nil
-}
-
 func (t *taskletRegionMaxpage) Execute(ctx task.TaskletCtx) error {
-	link := regionLink(t.region.Uri)
+	link := regionLink(t.region)
 	log.Info("Get region maxpage from link %q", link)
 	resp, err := rate.GetHtml(link)
 	if err != nil {
@@ -243,5 +227,30 @@ func (t *taskletRegionMaxpage) Execute(ctx task.TaskletCtx) error {
 	if err := t.parse(resp); err != nil {
 		return fmt.Errorf("Fail to get region maxpage from %q, %v", link, err)
 	}
+	return nil
+}
+
+func (t *taskletRegionMaxpage) parse(resp string) error {
+	doc := soup.HTMLParse(resp)
+	tags, err := findAll(&doc, 0, 1, "div", "class", "page-box house-lst-page-box")
+	if err != nil {
+		return err
+	} else if len(tags) == 0 {
+		return nil
+	}
+	data, err := tagAttr(&tags[0], "page-data")
+	if err != nil {
+		return err
+	}
+	re := regexp.MustCompile(`"totalPage":(\d+)`)
+	res := re.FindStringSubmatch(data)
+	if len(res) == 0 {
+		return fmt.Errorf("maxpage not found")
+	}
+	maxpage, err := strconv.ParseInt(res[1], 10, 32)
+	if err != nil {
+		return fmt.Errorf("maxpage %q not int", res[1])
+	}
+	t.region.MaxPage = int(maxpage)
 	return nil
 }

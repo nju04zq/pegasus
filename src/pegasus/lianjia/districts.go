@@ -44,7 +44,10 @@ func (job *JobDistricts) Init() error {
 		return err
 	}
 	for _, tag := range tags {
-		uri := tag.Attrs()["href"]
+		uri, err := tagAttr(&tag, "href")
+		if err != nil {
+			return err
+		}
 		abbr, err := parseAbbr(uri)
 		if err != nil {
 			return err

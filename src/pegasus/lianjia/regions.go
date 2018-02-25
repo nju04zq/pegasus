@@ -241,14 +241,17 @@ func (t *taskletRegions) parse(resp string) error {
 		return err
 	}
 	for _, tag := range tags {
-		uri := tag.Attrs()["href"]
+		uri, err := tagAttr(&tag, "href")
+		if err != nil {
+			return err
+		}
 		abbr, err := parseAbbr(uri)
 		if err != nil {
 			return err
 		}
 		r := &Region{
 			Name:  tag.Text(),
-			Uri:   tag.Attrs()["href"],
+			Uri:   uri,
 			Abbr:  abbr,
 			Dists: []*District{t.district},
 		}
