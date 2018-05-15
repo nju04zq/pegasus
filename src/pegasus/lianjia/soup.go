@@ -32,10 +32,10 @@ func findAll(tag *soup.Root, minCnt, maxCnt int, args ...string) ([]soup.Root, e
 	if len(args) == 0 {
 		return nil, fmt.Errorf("No args provided")
 	}
-	name := args[0]
 	tags := tag.FindAll(args...)
 	if (minCnt > 0 && len(tags) < minCnt) || (maxCnt > 0 && len(tags) > maxCnt) {
-		log.Error("Tag %s mismatch\n%s", name, render(tag))
+		log.Info("Tag %s mismatch [%d, %d]\n%s", formatTag(args...),
+			minCnt, maxCnt, render(tag))
 		return nil, fmt.Errorf("Tag %s mismatch [%d, %d]",
 			formatTag(args...), minCnt, maxCnt)
 	}

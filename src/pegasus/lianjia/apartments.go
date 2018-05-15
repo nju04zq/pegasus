@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/anaskhan96/soup"
 )
@@ -33,6 +34,8 @@ type Apartment struct {
 	Year     int
 	Withlift string
 	Visitcnt int
+	Nts      time.Time
+	Uts      time.Time
 }
 
 func (a *Apartment) String() string {
@@ -69,7 +72,11 @@ func (job *JobGetApartments) AppendInput(input interface{}) {
 }
 
 func (job *JobGetApartments) Init() error {
-	job.taskSize = len(job.regions)
+	for _, region := range job.regions {
+		if region.MaxPage > 0 {
+			job.taskSize++
+		}
+	}
 	job.apartments = make(map[string][]*Apartment)
 	return nil
 }
@@ -240,7 +247,7 @@ func (t *taskletGetApartments) Execute(ctx task.TaskletCtx) error {
 	for _, tag := range tags {
 		apartment, err := t.parseApartment(&tag)
 		if err != nil {
-			log.Error("Fail to parse apartment in %s, %v", render(&tag), err)
+			log.Error("Fail to parse apartment in %s, %s, %v", link, render(&tag), err)
 			return err
 		}
 		t.apartments = append(t.apartments, apartment)
@@ -252,7 +259,10 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 	// <a "data-el"="ershoufang">, for aid
 	tags, err := findAll(root, 1, 1, "a", "data-el", "ershoufang")
 	if err != nil {
-		return nil, err
+		tags, err = findAll(root, 1, 1, "a", "class", "LOGCLICKDATA ")
+		if err != nil {
+			return nil, err
+		}
 	}
 	href, err := tagAttr(&tags[0], "href")
 	if err != nil {
@@ -314,9 +324,9 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 	if len(res) == 0 {
 		return nil, fmt.Errorf("Apartment size not found")
 	}
-	total64, err := strconv.ParseInt(res[1], 10, 32)
+	total64, err := strconv.ParseFloat(res[1], 32)
 	if err != nil {
-		return nil, fmt.Errorf("Price %q not int", res[1])
+		return nil, fmt.Errorf("Price %q not float", res[1])
 	}
 	total := int(total64)
 	// <div class="positionInfo">, for floor, tfloor, year
@@ -363,6 +373,8 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 		Year:     year,
 		Withlift: withLift,
 		Visitcnt: visitcnt,
+		Nts:      time.Now(),
+		Uts:      time.Now(),
 	}, nil
 }
 
