@@ -124,11 +124,3 @@ func HttpFitRequestInto(r *http.Request, v interface{}) error {
 func GetRequestAddr(r *http.Request) string {
 	return r.RemoteAddr
 }
-
-func GetFormValFromReq(r *http.Request, key string) (string, error) {
-	if err := r.ParseForm(); err != nil {
-		return "", fmt.Errorf("Fail to parse form, %v", err)
-	}
-	val := r.Form.Get(key)
-	return val, nil
-}

@@ -13,9 +13,6 @@ var projs = make(map[string]reflect.Type)
 var taskGens = make(map[string]task.TaskGenerator)
 
 func register(proj task.Project) {
-	if err := proj.Init(); err != nil {
-		panic(err)
-	}
 	name := proj.GetName()
 	if _, ok := projs[name]; ok {
 		panic(fmt.Errorf("proj %q already registered", name))

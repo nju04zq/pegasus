@@ -34,7 +34,7 @@ func (job *JobRegionMaxpage) AppendInput(input interface{}) {
 	job.regions = a
 }
 
-func (job *JobRegionMaxpage) Init() error {
+func (job *JobRegionMaxpage) Init(env interface{}) error {
 	job.taskSize = len(job.regions)
 	job.grpSize = workgroup.WgCfg.WorkerExecutorCnt
 	if job.grpSize <= 0 {

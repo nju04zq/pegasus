@@ -55,6 +55,7 @@ type ProjectCtx struct {
 	mutex    sync.Mutex
 	free     bool
 	projId   string
+	config   string
 	proj     task.Project
 	projMeta *ProjMeta
 }
@@ -70,7 +71,7 @@ func (ctx *ProjectCtx) start() {
 	ctx.projMeta.StartTs = time.Now()
 }
 
-func (ctx *ProjectCtx) checkAndUnsetFree(proj task.Project) (string, error) {
+func (ctx *ProjectCtx) checkAndUnsetFree(proj task.Project, config string) (string, error) {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 	if !ctx.free {
@@ -78,6 +79,7 @@ func (ctx *ProjectCtx) checkAndUnsetFree(proj task.Project) (string, error) {
 	}
 	ctx.free = false
 	ctx.proj = proj
+	ctx.config = config
 	ctx.projId = ctx.makeProjId()
 	return ctx.projId, nil
 }
@@ -124,13 +126,13 @@ func projRunner() {
 	log.Info("Run project %q", projctx.projId)
 	projctx.start()
 	proj := projctx.proj
-	if err := proj.Init(); err != nil {
+	if err := proj.Init(projctx.config); err != nil {
 		projctx.setErr(err)
 		log.Info("Fail on project %q init, %v", projctx.projId, err)
 		return
 	}
 	for _, job := range proj.GetJobs() {
-		jmeta, err := runJob(job)
+		jmeta, err := runJob(job, proj.GetEnv())
 		projctx.insertJobMeta(jmeta)
 		if err != nil {
 			err = fmt.Errorf("Fail on job %q, %v", job.GetKind(), err)
@@ -152,8 +154,8 @@ type RunProjReceipt struct {
 	ProjId string
 }
 
-func runProj(proj task.Project) *RunProjReceipt {
-	projId, err := projctx.checkAndUnsetFree(proj)
+func runProj(proj task.Project, config string) *RunProjReceipt {
+	projId, err := projctx.checkAndUnsetFree(proj, config)
 	if err != nil {
 		return &RunProjReceipt{
 			ErrMsg: err.Error(),
@@ -165,20 +167,26 @@ func runProj(proj task.Project) *RunProjReceipt {
 }
 
 func runProjHandler(w http.ResponseWriter, r *http.Request) {
-	key := uri.MasterProjNameKey
-	projName, err := util.GetFormValFromReq(r, key)
-	if err != nil {
-		err = fmt.Errorf("Fail to get key %q value from request, err %v", key, err)
+	if err := r.ParseForm(); err != nil {
+		err = fmt.Errorf("Fail to parse form, err %v", err)
 		server.FmtResp(w, err, nil)
 		return
 	}
+	projName := r.Form.Get(uri.MasterProjNameKey)
+	body, err := util.HttpReadRequestJsonBody(r)
+	if err != nil {
+		err = fmt.Errorf("Fail to read body, err %v", err)
+		server.FmtResp(w, err, nil)
+		return
+	}
+	config := string(body)
 	proj := taskreg.GetProj(projName)
 	if proj == nil {
 		err = fmt.Errorf("Proj %q not supported", projName)
 		server.FmtResp(w, err, nil)
 		return
 	}
-	receipt := runProj(proj)
+	receipt := runProj(proj, config)
 	server.FmtResp(w, nil, receipt)
 }
 

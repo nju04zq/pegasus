@@ -19,6 +19,7 @@ type District struct {
 }
 
 type JobDistricts struct {
+	env       *ProjLianjiaEnv
 	districts []*District
 	nextJobs  []*JobRegions
 }
@@ -27,39 +28,60 @@ func (job *JobDistricts) AppendInput(input interface{}) {
 	return
 }
 
-func (job *JobDistricts) Init() error {
+func (job *JobDistricts) Init(env interface{}) error {
+	var ok bool
+	if job.env, ok = env.(*ProjLianjiaEnv); !ok {
+		return fmt.Errorf("Fail to get proj env on init")
+	}
+	districts, err := job.getAllDistricts()
+	if err != nil {
+		return err
+	}
+	target := job.env.Conf.Districts
 	job.districts = make([]*District, 0)
+	for _, district := range districts {
+		if len(target) == 0 {
+			job.districts = append(job.districts, district)
+		} else if _, ok := target[district.Name]; ok {
+			job.districts = append(job.districts, district)
+		}
+	}
+	return nil
+}
+
+func (job *JobDistricts) getAllDistricts() ([]*District, error) {
+	districts := make([]*District, 0)
 	link := ERSHOUFANG_LINK
 	resp, err := rate.GetHtml(link)
 	if err != nil {
-		return fmt.Errorf("Fail to get from %q, %v", link, err)
+		return nil, fmt.Errorf("Fail to get from %q, %v", link, err)
 	}
 	doc := soup.HTMLParse(resp)
 	tags, err := findAll(&doc, 1, 1, "div", "data-role", "ershoufang")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	tags, err = findAll(&tags[0], 1, -1, "a")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for _, tag := range tags {
 		uri, err := tagAttr(&tag, "href")
 		if err != nil {
-			return err
+			return nil, err
 		}
 		abbr, err := parseAbbr(uri)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		d := &District{
 			Name: tag.Text(),
 			Abbr: abbr,
 		}
 		log.Info("Get district %q, %q", d.Name, d.Abbr)
-		job.districts = append(job.districts, d)
+		districts = append(districts, d)
 	}
-	return nil
+	return districts, nil
 }
 
 func (job *JobDistricts) GetKind() string {

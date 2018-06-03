@@ -32,7 +32,7 @@ func (job *JobMergesort) AppendInput(input interface{}) {
 	return
 }
 
-func (job *JobMergesort) Init() error {
+func (job *JobMergesort) Init(env interface{}) error {
 	job.total = len(job.input)
 	job.output = make([]int, 0)
 	job.tskSize = (job.total + SPLIT_SEGMENTS - 1) / SPLIT_SEGMENTS

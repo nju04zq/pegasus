@@ -24,7 +24,7 @@ func (job *JobDumpres) AppendInput(input interface{}) {
 	return
 }
 
-func (job *JobDumpres) Init() error {
+func (job *JobDumpres) Init(env interface{}) error {
 	buf, err := json.Marshal(job.input)
 	if err != nil {
 		return err

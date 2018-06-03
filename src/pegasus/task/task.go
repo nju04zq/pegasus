@@ -7,7 +7,8 @@ import (
 )
 
 type Project interface {
-	Init() error
+	Init(config string) error
+	GetEnv() interface{}
 	GetName() string
 	GetJobs() []Job
 	Finish() error
@@ -15,7 +16,7 @@ type Project interface {
 
 type Job interface {
 	AppendInput(input interface{})
-	Init() error
+	Init(env interface{}) error
 	GetKind() string
 	CalcTaskCnt() int
 	GetNextTask(tid string) *TaskSpec

@@ -71,7 +71,7 @@ func (job *JobGetApartments) AppendInput(input interface{}) {
 	}
 }
 
-func (job *JobGetApartments) Init() error {
+func (job *JobGetApartments) Init(env interface{}) error {
 	for _, region := range job.regions {
 		if region.MaxPage > 0 {
 			job.taskSize++

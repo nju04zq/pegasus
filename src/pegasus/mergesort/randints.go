@@ -28,7 +28,7 @@ func (job *JobRandInts) AppendInput(input interface{}) {
 	return
 }
 
-func (job *JobRandInts) Init() error {
+func (job *JobRandInts) Init(env interface{}) error {
 	job.seed = time.Now().UnixNano()
 	job.tskIndex = 0
 	job.output = make([]int, 0)

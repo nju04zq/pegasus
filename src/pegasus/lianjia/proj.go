@@ -1,21 +1,42 @@
 package lianjia
 
 import (
+	"encoding/json"
+	"fmt"
 	"pegasus/log"
 	"pegasus/rate"
 	"pegasus/task"
 )
 
 const (
-	PROJ_LIANJIA = "Lianjia-Crawler"
+	PROJ_LIANJIA   = "Lianjia-Crawler"
+	LIANJIA_DBNAME = "lianjia"
 )
+
+type ProjLianjiaConf struct {
+	Districts map[string][]string
+}
+
+type ProjLianjiaEnv struct {
+	Conf *ProjLianjiaConf
+}
+
+func (env *ProjLianjiaEnv) init() *ProjLianjiaEnv {
+	env.Conf = new(ProjLianjiaConf)
+	return env
+}
 
 type ProjLianjia struct {
 	err  error
 	jobs []task.Job
+	env  *ProjLianjiaEnv
 }
 
-func (proj *ProjLianjia) Init() error {
+func (proj *ProjLianjia) Init(config string) error {
+	proj.env = new(ProjLianjiaEnv).init()
+	if err := json.Unmarshal([]byte(config), proj.env.Conf); err != nil {
+		return fmt.Errorf("Fail to unmarshal project config, %v", err)
+	}
 	j0 := new(JobDistricts)
 	j1 := new(JobRegions)
 	j2 := new(JobRegionMaxpage)
@@ -25,6 +46,10 @@ func (proj *ProjLianjia) Init() error {
 	j2.nextJobs = []*JobGetApartments{j3}
 	proj.jobs = []task.Job{j0, j1, j2, j3}
 	return nil
+}
+
+func (proj *ProjLianjia) GetEnv() interface{} {
+	return proj.env
 }
 
 func (proj *ProjLianjia) GetName() string {

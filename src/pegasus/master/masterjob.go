@@ -509,7 +509,7 @@ func splitJobAndRun(job task.Job) error {
 	return nil
 }
 
-func jobRunner(job task.Job) error {
+func jobRunner(job task.Job, env interface{}) error {
 	log.Info("Running job %q", job.GetKind())
 	jobctx.start()
 	if err := jobctx.assignJob(job); err != nil {
@@ -526,8 +526,8 @@ func jobRunner(job task.Job) error {
 	return nil
 }
 
-func runJob(job task.Job) (*JobMeta, error) {
-	err := jobRunner(job)
+func runJob(job task.Job, env interface{}) (*JobMeta, error) {
+	err := jobRunner(job, env)
 	if err != nil {
 		jobctx.setErr(err)
 	}

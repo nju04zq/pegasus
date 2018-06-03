@@ -35,6 +35,7 @@ func (r *Region) String() string {
 }
 
 type JobRegions struct {
+	env       *ProjLianjiaEnv
 	districts []*District
 	taskSize  int
 	grpSize   int
@@ -56,7 +57,11 @@ func (job *JobRegions) AppendInput(input interface{}) {
 	}
 }
 
-func (job *JobRegions) Init() error {
+func (job *JobRegions) Init(env interface{}) error {
+	var ok bool
+	if job.env, ok = env.(*ProjLianjiaEnv); !ok {
+		return fmt.Errorf("Fail to get proj env on init")
+	}
 	job.taskSize = len(job.districts)
 	job.grpSize = workgroup.WgCfg.WorkerExecutorCnt
 	if job.grpSize <= 0 {
@@ -102,6 +107,13 @@ func (job *JobRegions) ReduceTasks(reports []*task.TaskReport) error {
 			return err
 		}
 		for _, r := range regions {
+			if len(r.Dists) == 0 {
+				log.Error("Get region %s, %s without district", r.Name, r.Abbr)
+				continue
+			}
+			if !job.needRegion(r) {
+				continue
+			}
 			region, ok := job.regionTbl[r.Abbr]
 			if ok {
 				region.Dists = append(region.Dists, r.Dists...)
@@ -112,6 +124,20 @@ func (job *JobRegions) ReduceTasks(reports []*task.TaskReport) error {
 		}
 	}
 	return nil
+}
+
+func (job *JobRegions) needRegion(r *Region) bool {
+	dname, target := r.Dists[0].Name, job.env.Conf.Districts
+	rnames, ok := target[dname]
+	if !ok {
+		return false
+	}
+	for _, rname := range rnames {
+		if rname == r.Name {
+			return true
+		}
+	}
+	return false
 }
 
 func (job *JobRegions) GetOutput() interface{} {

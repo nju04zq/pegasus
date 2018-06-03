@@ -13,7 +13,7 @@ type ProjMergesort struct {
 	jobs []task.Job
 }
 
-func (proj *ProjMergesort) Init() error {
+func (proj *ProjMergesort) Init(config string) error {
 	j0 := new(JobRandInts)
 	j1 := new(JobMergesort)
 	j2 := new(JobDumpres)
