@@ -65,7 +65,7 @@ func (job *JobRegionMaxpage) GetNextTask(tid string) *task.TaskSpec {
 	for ; i < end; i++ {
 		regions = append(regions, job.regions[i])
 	}
-	spec := &tspecRegionMaxpage{
+	spec := &TspecRegionMaxpage{
 		Regions: regions,
 	}
 	job.nextRegion = end
@@ -122,7 +122,7 @@ func (job *JobRegionMaxpage) GetTaskGen() task.TaskGenerator {
 	return TaskGenRegionMaxpage
 }
 
-type tspecRegionMaxpage struct {
+type TspecRegionMaxpage struct {
 	Regions []*Region
 }
 
@@ -130,7 +130,7 @@ func TaskGenRegionMaxpage(tspec *task.TaskSpec) (task.Task, error) {
 	tsk := new(taskRegionMaxpage)
 	tsk.tid = tspec.Tid
 	tsk.kind = tspec.Kind
-	spec := new(tspecRegionMaxpage)
+	spec := new(TspecRegionMaxpage)
 	task.DecodeSpec(tspec, spec)
 	tsk.regions = spec.Regions
 	s := make([]string, len(tsk.regions))
@@ -236,8 +236,11 @@ func (t *taskletRegionMaxpage) parse(resp string) error {
 	if err != nil {
 		return err
 	} else if len(tags) == 0 {
+		// no maxpage tag for region without apartments
+		//return fmt.Errorf("No maxpage tag found")
 		return nil
 	}
+	log.Info("Pasre region maxpage1")
 	data, err := tagAttr(&tags[0], "page-data")
 	if err != nil {
 		return err
@@ -252,5 +255,6 @@ func (t *taskletRegionMaxpage) parse(resp string) error {
 		return fmt.Errorf("maxpage %q not int", res[1])
 	}
 	t.region.MaxPage = int(maxpage)
+	log.Info("Get maxpage for %q as %d", t.region.Abbr, t.region.MaxPage)
 	return nil
 }

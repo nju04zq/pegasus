@@ -283,7 +283,8 @@ func makeTaskspec(r *http.Request) (tspec *task.TaskSpec, err error) {
 		err = fmt.Errorf("Fail to read request body, %v", err)
 		return
 	}
-	log.Info("Get task spec:\n%s", string(buf))
+	maxlen := util.Min(len(buf), 2*1024)
+	log.Info("Get task spec:\n%s", string(buf[:maxlen]))
 	tspec = new(task.TaskSpec)
 	if err = json.Unmarshal(buf, tspec); err != nil {
 		err = fmt.Errorf("Fail unmarshal tspec %s, %v", string(buf), err)

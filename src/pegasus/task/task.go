@@ -7,6 +7,7 @@ import (
 )
 
 type Project interface {
+	InitJobs()
 	Init(config string) error
 	GetEnv() interface{}
 	GetName() string

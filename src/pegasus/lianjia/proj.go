@@ -9,8 +9,7 @@ import (
 )
 
 const (
-	PROJ_LIANJIA   = "Lianjia-Crawler"
-	LIANJIA_DBNAME = "lianjia"
+	PROJ_LIANJIA = "Lianjia-Crawler"
 )
 
 type ProjLianjiaConf struct {
@@ -37,15 +36,22 @@ func (proj *ProjLianjia) Init(config string) error {
 	if err := json.Unmarshal([]byte(config), proj.env.Conf); err != nil {
 		return fmt.Errorf("Fail to unmarshal project config, %v", err)
 	}
+	proj.InitJobs()
+	log.Info("Target districts %v", proj.env.Conf.Districts)
+	return nil
+}
+
+func (proj *ProjLianjia) InitJobs() {
 	j0 := new(JobDistricts)
 	j1 := new(JobRegions)
 	j2 := new(JobRegionMaxpage)
 	j3 := new(JobGetApartments)
+	j4 := new(JobUpdateDb)
 	j0.nextJobs = []*JobRegions{j1}
 	j1.nextJobs = []*JobRegionMaxpage{j2}
 	j2.nextJobs = []*JobGetApartments{j3}
-	proj.jobs = []task.Job{j0, j1, j2, j3}
-	return nil
+	j3.nextJobs = []*JobUpdateDb{j4}
+	proj.jobs = []task.Job{j0, j1, j2, j3, j4}
 }
 
 func (proj *ProjLianjia) GetEnv() interface{} {

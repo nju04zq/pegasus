@@ -3,6 +3,7 @@ package taskreg
 import (
 	"fmt"
 	"pegasus/lianjia"
+	"pegasus/log"
 	"pegasus/mergesort"
 	"pegasus/task"
 	"reflect"
@@ -14,6 +15,7 @@ var taskGens = make(map[string]task.TaskGenerator)
 
 func register(proj task.Project) {
 	name := proj.GetName()
+	log.Info("Register proj %q", name)
 	if _, ok := projs[name]; ok {
 		panic(fmt.Errorf("proj %q already registered", name))
 	}
@@ -24,11 +26,13 @@ func register(proj task.Project) {
 }
 
 func registerTasks(proj task.Project) error {
+	proj.InitJobs()
 	for _, job := range proj.GetJobs() {
 		kind := job.GetKind()
 		if _, ok := taskGens[kind]; ok {
-			return fmt.Errorf("Job %q already registered", kind)
+			return fmt.Errorf("Task %q already registered", kind)
 		}
+		log.Info("Register task %q", kind)
 		taskGens[kind] = job.GetTaskGen()
 	}
 	return nil
@@ -51,6 +55,6 @@ func GetTaskGenerator(kind string) task.TaskGenerator {
 }
 
 func init() {
-	register(new(mergesort.ProjMergesort))
-	register(new(lianjia.ProjLianjia))
+	register(&mergesort.ProjMergesort{})
+	register(&lianjia.ProjLianjia{})
 }

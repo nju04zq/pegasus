@@ -21,21 +21,38 @@ const (
 )
 
 type Apartment struct {
-	Aid      string
-	Location string
-	Price    int
-	Size     string
-	Total    int
-	Subway   int
-	Station  string
-	Smeter   int
-	Floor    string
-	Tfloor   int
-	Year     int
-	Withlift string
-	Visitcnt int
-	Nts      time.Time
-	Uts      time.Time
+	Location string `db:"location,size:64"`
+	Aid      string `db:"aid,size:32"`
+	Price    int    `db:"price"`
+	Size     string `db:"size,size:32"`
+	Total    int    `db:"total"`
+	Nts      int64  `db:"nts"`
+	Uts      int64  `db:"uts"`
+	Subway   int    `db:"subway"`
+	Station  string `db:"station,size:16"`
+	Smeter   int    `db:"smeter"`
+	Floor    string `db:"floor,size:4"`
+	Tfloor   int    `db:"tfloor"`
+	Year     int    `db:"year"`
+	Withlift string `db:"withlift,size:4"`
+	Visitcnt int    `db:"visitcnt"`
+}
+
+type ApartmentDataChange struct {
+	Aid      string `db:"aid,size:32"`
+	OldPrice int    `db:"old_price"`
+	NewPrice int    `db:"new_price"`
+	OldTotal int    `db:"old_total"`
+	NewTotal int    `db:"new_total"`
+	Ts       int64  `db:"ts"`
+}
+
+type ApartmentMetaChange struct {
+	Aid  string `db:"aid,size:32"`
+	Item string `db:"item,size:16"`
+	Old  string `db:"old,size:64"`
+	New  string `db:"new,size:64"`
+	Ts   int64  `db:"ts"`
 }
 
 func (a *Apartment) String() string {
@@ -59,6 +76,7 @@ type JobGetApartments struct {
 	taskSize   int
 	nextRegion int
 	apartments map[string][]*Apartment
+	nextJobs   []*JobUpdateDb
 }
 
 func (job *JobGetApartments) AppendInput(input interface{}) {
@@ -99,7 +117,7 @@ func (job *JobGetApartments) GetNextTask(tid string) *task.TaskSpec {
 		}
 		job.nextRegion++
 	}
-	spec := &tspecGetApartments{
+	spec := &TspecGetApartments{
 		RegionInfo: job.regions[job.nextRegion],
 	}
 	job.nextRegion++
@@ -122,18 +140,22 @@ func (job *JobGetApartments) ReduceTasks(reports []*task.TaskReport) error {
 }
 
 func (job *JobGetApartments) GetOutput() interface{} {
-	return nil
+	return job.apartments
 }
 
 func (job *JobGetApartments) GetNextJobs() []task.Job {
-	return nil
+	jobs := make([]task.Job, 0, len(job.nextJobs))
+	for _, j := range job.nextJobs {
+		jobs = append(jobs, j)
+	}
+	return jobs
 }
 
 func (job *JobGetApartments) GetTaskGen() task.TaskGenerator {
 	return TaskGenGetApartments
 }
 
-type tspecGetApartments struct {
+type TspecGetApartments struct {
 	RegionInfo *Region
 }
 
@@ -141,7 +163,7 @@ func TaskGenGetApartments(tspec *task.TaskSpec) (task.Task, error) {
 	tsk := new(taskGetApartments)
 	tsk.tid = tspec.Tid
 	tsk.kind = tspec.Kind
-	spec := new(tspecGetApartments)
+	spec := new(TspecGetApartments)
 	task.DecodeSpec(tspec, spec)
 	tsk.region = spec.RegionInfo
 	tsk.desc = fmt.Sprintf("Crawler region %s", tsk.region.Name)
@@ -199,9 +221,17 @@ func (tsk *taskGetApartments) GetNextTasklet(taskletid string) task.Tasklet {
 }
 
 func (tsk *taskGetApartments) ReduceTasklets(tasklets []task.Tasklet) {
+	set := make(map[string]bool)
 	for _, t := range tasklets {
 		tasklet := t.(*taskletGetApartments)
-		tsk.apartments = append(tsk.apartments, tasklet.apartments...)
+		for _, apartment := range tasklet.apartments {
+			if _, ok := set[apartment.Aid]; ok {
+				log.Error("Drop duplicate apartment %s", apartment.Aid)
+				continue
+			}
+			set[apartment.Aid] = true
+			tsk.apartments = append(tsk.apartments, apartment)
+		}
 	}
 }
 
@@ -248,7 +278,7 @@ func (t *taskletGetApartments) Execute(ctx task.TaskletCtx) error {
 		apartment, err := t.parseApartment(&tag)
 		if err != nil {
 			log.Error("Fail to parse apartment in %s, %s, %v", link, render(&tag), err)
-			return err
+			continue
 		}
 		t.apartments = append(t.apartments, apartment)
 	}
@@ -278,6 +308,7 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 		return nil, err
 	}
 	location := tags[0].Text()
+	location = strings.Replace(location, " ", "", -1)
 	// <div "class"="houseInfo">, for size, withLift
 	tags, err = findAll(root, 1, 1, "div", "class", "houseInfo")
 	if err != nil {
@@ -373,8 +404,8 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 		Year:     year,
 		Withlift: withLift,
 		Visitcnt: visitcnt,
-		Nts:      time.Now(),
-		Uts:      time.Now(),
+		Nts:      time.Now().Unix(),
+		Uts:      time.Now().Unix(),
 	}, nil
 }
 

@@ -15,12 +15,13 @@ func distLink(d *District) string {
 }
 
 func regionLink(r *Region) string {
-	return fmt.Sprintf("%s%s", ERSHOUFANG_LINK, r.Abbr)
+	return fmt.Sprintf("%s%s/", ERSHOUFANG_LINK, r.Abbr)
 }
 
 func regionPgLink(r *Region, page int) string {
 	link := regionLink(r)
-	return fmt.Sprintf("%s/pg%d", link, page)
+	// pg2co32, 最新排序
+	return fmt.Sprintf("%spg%dco32/", link, page)
 }
 
 func parseAbbr(uri string) (string, error) {

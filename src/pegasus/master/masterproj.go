@@ -84,17 +84,13 @@ func (ctx *ProjectCtx) checkAndUnsetFree(proj task.Project, config string) (stri
 	return ctx.projId, nil
 }
 
-func (ctx *ProjectCtx) setErr(err error) {
+func (ctx *ProjectCtx) finish(err error) {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	ctx.projMeta.err = err
-	ctx.projMeta.ErrMsg = err.Error()
-	ctx.finish()
-}
-
-func (ctx *ProjectCtx) finish() {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
+	if err != nil {
+		ctx.projMeta.err = err
+		ctx.projMeta.ErrMsg = err.Error()
+	}
 	ctx.projMeta.Finished = true
 	ctx.projMeta.EndTs = time.Now()
 	ctx.free = true
@@ -127,8 +123,8 @@ func projRunner() {
 	projctx.start()
 	proj := projctx.proj
 	if err := proj.Init(projctx.config); err != nil {
-		projctx.setErr(err)
-		log.Info("Fail on project %q init, %v", projctx.projId, err)
+		projctx.finish(err)
+		log.Error("Fail on project %q init, %v", projctx.projId, err)
 		return
 	}
 	for _, job := range proj.GetJobs() {
@@ -136,16 +132,17 @@ func projRunner() {
 		projctx.insertJobMeta(jmeta)
 		if err != nil {
 			err = fmt.Errorf("Fail on job %q, %v", job.GetKind(), err)
-			projctx.setErr(err)
+			projctx.finish(err)
+			log.Error(err.Error())
 			break
 		}
 	}
 	if err := proj.Finish(); err != nil {
-		projctx.setErr(err)
-		log.Info("Fail on project %q finish, %v", projctx.projId, err)
+		projctx.finish(err)
+		log.Error("Fail on project %q finish, %v", projctx.projId, err)
 		return
 	}
-	projctx.finish()
+	projctx.finish(nil)
 	log.Info("Run project %q finished", projctx.projId)
 }
 

@@ -43,7 +43,7 @@ func (d *Database) open() (err error) {
 	if err := d.prepareDb(d.dbName); err != nil {
 		return err
 	}
-	d.dbmap = &gorp.DbMap{Db: d.db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
+	d.dbmap = &gorp.DbMap{Db: d.db, Dialect: gorp.MySQLDialect{"InnoDB", "utf8mb4"}}
 	return nil
 }
 

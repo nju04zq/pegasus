@@ -89,7 +89,7 @@ func (job *JobRegions) GetNextTask(tid string) *task.TaskSpec {
 	for ; i < end; i++ {
 		districts = append(districts, job.districts[i])
 	}
-	spec := &tspecRegions{
+	spec := &TspecRegions{
 		Districts: districts,
 	}
 	job.nextDist = end
@@ -114,6 +114,7 @@ func (job *JobRegions) ReduceTasks(reports []*task.TaskReport) error {
 			if !job.needRegion(r) {
 				continue
 			}
+			log.Info("Need region %s", r.Name)
 			region, ok := job.regionTbl[r.Abbr]
 			if ok {
 				region.Dists = append(region.Dists, r.Dists...)
@@ -128,6 +129,9 @@ func (job *JobRegions) ReduceTasks(reports []*task.TaskReport) error {
 
 func (job *JobRegions) needRegion(r *Region) bool {
 	dname, target := r.Dists[0].Name, job.env.Conf.Districts
+	if len(target) == 0 {
+		return true
+	}
 	rnames, ok := target[dname]
 	if !ok {
 		return false
@@ -156,7 +160,7 @@ func (job *JobRegions) GetTaskGen() task.TaskGenerator {
 	return TaskGenRegions
 }
 
-type tspecRegions struct {
+type TspecRegions struct {
 	Districts []*District
 }
 
@@ -164,7 +168,7 @@ func TaskGenRegions(tspec *task.TaskSpec) (task.Task, error) {
 	tsk := new(taskRegions)
 	tsk.tid = tspec.Tid
 	tsk.kind = tspec.Kind
-	spec := new(tspecRegions)
+	spec := new(TspecRegions)
 	task.DecodeSpec(tspec, spec)
 	tsk.districts = spec.Districts
 	names := make([]string, len(tsk.districts))

@@ -16,7 +16,7 @@ var jobctx = new(JobCtx)
 
 const (
 	BUF_TASK_CNT = 10
-	TASK_MAX_ERR = 5
+	TASK_MAX_ERR = 0 // do not allow retry
 )
 
 type TaskMeta struct {
@@ -203,9 +203,9 @@ func (ctx *JobCtx) finish() {
 	ctx.jobMeta.Finished = true
 }
 
-func (ctx *JobCtx) assignJob(job task.Job) error {
+func (ctx *JobCtx) assignJob(job task.Job, env interface{}) error {
 	log.Info("Assign and init job %q", job.GetKind())
-	if err := job.Init(); err != nil {
+	if err := job.Init(env); err != nil {
 		err = fmt.Errorf("Fail to init job %q, %v", job.GetKind(), err)
 		log.Error(err.Error())
 		return err
@@ -220,9 +220,11 @@ func (ctx *JobCtx) assignJob(job task.Job) error {
 func (ctx *JobCtx) setErr(err error) {
 	log.Info("Set err %q to job ctx", err)
 	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
+	defer func() {
+		ctx.mutex.Unlock()
+		ctx.shouldFinish <- struct{}{}
+	}()
 	ctx.jobMeta.setErr(err)
-	ctx.shouldFinish <- struct{}{}
 }
 
 func (ctx *JobCtx) aborted() bool {
@@ -356,7 +358,7 @@ func taskReportHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Info("Get task report from %q", key)
-	log.Debug("Task report from %q:\n%s", key, body)
+	//log.Debug("Task report from %q:\n%s", key, body)
 	report := new(task.TaskReport)
 	if err = json.Unmarshal(body, report); err != nil {
 		err = fmt.Errorf("Fail to unmarshal body for task report, %v, body:\n%s",
@@ -374,14 +376,14 @@ func handleTaskReport(key string, report *task.TaskReport) error {
 	if err := wmgr.handleTaskReport(jobctx, key, report); err != nil {
 		log.Error("Fail handle task report, %v", err)
 		return err
-	} else {
-		jobctx.incDone()
 	}
 	jobctx.addTaskReport(report)
 	if report.Err != "" {
 		if m := jobctx.getTaskMeta(report.Tid); m != nil {
 			reassignTask(m.tspec)
 		}
+	} else {
+		jobctx.incDone()
 	}
 	return nil
 }
@@ -488,7 +490,7 @@ func reduceTasks(ctx *JobCtx) error {
 func feedNextJobs(job task.Job) {
 	log.Info("Feed output to next level jobs")
 	output := job.GetOutput()
-	log.Debug("Job %q output:\n%v", job.GetKind(), output)
+	//log.Debug("Job %q output:\n%v", job.GetKind(), output)
 	for _, nextJob := range job.GetNextJobs() {
 		log.Info("Append output to job %q", nextJob.GetKind())
 		nextJob.AppendInput(output)
@@ -512,7 +514,7 @@ func splitJobAndRun(job task.Job) error {
 func jobRunner(job task.Job, env interface{}) error {
 	log.Info("Running job %q", job.GetKind())
 	jobctx.start()
-	if err := jobctx.assignJob(job); err != nil {
+	if err := jobctx.assignJob(job, env); err != nil {
 		return err
 	}
 	if jobctx.jobMeta.Total > 0 {
@@ -529,7 +531,7 @@ func jobRunner(job task.Job, env interface{}) error {
 func runJob(job task.Job, env interface{}) (*JobMeta, error) {
 	err := jobRunner(job, env)
 	if err != nil {
-		jobctx.setErr(err)
+		jobctx.jobMeta.setErr(err)
 	}
 	return jobctx.snapshotJobMeta(), err
 }
