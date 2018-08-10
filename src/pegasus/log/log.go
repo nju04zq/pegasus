@@ -56,7 +56,7 @@ func Error(format string, args ...interface{}) {
 }
 
 func buildLogMsg(level int, format string, args ...interface{}) string {
-	ts := time.Now().Format("2006-01-02 15:04:05")
+	ts := time.Now().Format("2006-01-02 15:04:05.999")
 	l := GetLogLevelStr(level)
 	s := fmt.Sprintf(format, args...)
 	return fmt.Sprintf("%s %s %s\n", ts, l, s)

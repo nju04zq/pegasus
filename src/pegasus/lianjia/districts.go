@@ -115,3 +115,7 @@ func (job *JobDistricts) GetNextJobs() []task.Job {
 func (job *JobDistricts) GetTaskGen() task.TaskGenerator {
 	return nil
 }
+
+func (job *JobDistricts) GetReport() string {
+	return fmt.Sprintf("Get %d districts.", len(job.districts))
+}

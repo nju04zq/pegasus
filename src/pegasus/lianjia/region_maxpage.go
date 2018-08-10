@@ -122,6 +122,10 @@ func (job *JobRegionMaxpage) GetTaskGen() task.TaskGenerator {
 	return TaskGenRegionMaxpage
 }
 
+func (job *JobRegionMaxpage) GetReport() string {
+	return fmt.Sprintf("Get %d regions, total pages %d.", len(job.regions), job.totalPages)
+}
+
 type TspecRegionMaxpage struct {
 	Regions []*Region
 }

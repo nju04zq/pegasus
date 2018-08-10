@@ -2,7 +2,6 @@ package lianjia
 
 import (
 	"fmt"
-	"pegasus/db"
 	"pegasus/log"
 	"pegasus/task"
 	"reflect"
@@ -14,8 +13,6 @@ import (
 const (
 	JOB_KIND_UPDATE_DB  = "Lianjia Crawler: Update database"
 	TASK_KIND_UPDATE_DB = JOB_KIND_UPDATE_DB
-
-	LIANJIA_DBNAME = "lianjia_pegasus"
 )
 
 type JobUpdateDb struct {
@@ -86,6 +83,14 @@ func (job *JobUpdateDb) GetNextJobs() []task.Job {
 
 func (job *JobUpdateDb) GetTaskGen() task.TaskGenerator {
 	return TaskGenUpdateDb
+}
+
+func (job *JobUpdateDb) GetReport() string {
+	cnt := 0
+	for _, a := range job.apartments {
+		cnt += len(a)
+	}
+	return fmt.Sprintf("Update %d apartments.", cnt)
 }
 
 type TspecUpdateDb struct {
@@ -184,17 +189,17 @@ func (t *taskletUpdateDb) GetTaskletId() string {
 }
 
 func (t *taskletUpdateDb) Execute(ctx task.TaskletCtx) error {
-	d, err := db.OpenMysqlDatabase(LIANJIA_DBNAME)
+	dbmap, err := getDbmap()
 	if err != nil {
-		return err
+		return fmt.Errorf("Fail to get dbmap, %v", err)
 	}
-	defer d.Close()
-	t.dbmap = d.GetDbmap()
+	t.dbmap = dbmap
+	defer putDbmap()
 	if err := t.addTables(); err != nil {
-		return err
+		return fmt.Errorf("Fail to add tables, %v", err)
 	}
 	if err := t.updateApartments(); err != nil {
-		return err
+		return fmt.Errorf("Fail to update, %v", err)
 	}
 	return nil
 }
@@ -352,7 +357,7 @@ func (t *taskletUpdateDb) updateOneMetaChange(objbuf *objBuf, aid, item, old, ne
 }
 
 const (
-	OBJ_BUF_SIZE = 5
+	OBJ_BUF_SIZE = 4
 )
 
 type objBuf struct {

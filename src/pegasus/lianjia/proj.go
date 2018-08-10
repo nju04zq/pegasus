@@ -17,11 +17,13 @@ type ProjLianjiaConf struct {
 }
 
 type ProjLianjiaEnv struct {
-	Conf *ProjLianjiaConf
+	Conf    *ProjLianjiaConf
+	regions map[string]*Region
 }
 
 func (env *ProjLianjiaEnv) init() *ProjLianjiaEnv {
 	env.Conf = new(ProjLianjiaConf)
+	env.regions = make(map[string]*Region)
 	return env
 }
 

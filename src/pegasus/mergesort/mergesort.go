@@ -98,6 +98,10 @@ func (job *JobMergesort) GetTaskGen() task.TaskGenerator {
 	return TaskGenMergesort
 }
 
+func (job *JobMergesort) GetReport() string {
+	return ""
+}
+
 type taskSpecMergesort struct {
 	Seq []int
 }

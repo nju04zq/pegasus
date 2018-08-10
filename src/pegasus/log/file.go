@@ -36,7 +36,6 @@ func (l *FileLogger) init() error {
 	} else {
 		return fmt.Errorf("Fail to stat %q, %v", l.Path, err)
 	}
-	return nil
 }
 
 func (l *FileLogger) initFromNonExisted() error {

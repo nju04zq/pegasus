@@ -191,7 +191,9 @@ func queryProjStatusHandler(w http.ResponseWriter, r *http.Request) {
 	pmeta := projctx.snapshotProjMeta()
 	jmeta := jobctx.snapshotJobMeta()
 	jmetas := pmeta.JobMetas
-	if len(jmetas) > 0 {
+	if jmeta.Kind == "" {
+		// do nothing
+	} else if len(jmetas) > 0 {
 		last := jmetas[len(jmetas)-1]
 		if last.Kind != jmeta.Kind && last.StartTs != jmeta.StartTs {
 			pmeta.JobMetas = append(pmeta.JobMetas, jmeta)

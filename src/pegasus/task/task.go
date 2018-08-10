@@ -25,6 +25,7 @@ type Job interface {
 	GetOutput() interface{}
 	GetNextJobs() []Job
 	GetTaskGen() TaskGenerator
+	GetReport() string
 }
 
 type JobStatus struct {

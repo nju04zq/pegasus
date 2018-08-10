@@ -124,6 +124,7 @@ func (job *JobRegions) ReduceTasks(reports []*task.TaskReport) error {
 			}
 		}
 	}
+	job.env.regions = job.regionTbl
 	return nil
 }
 
@@ -158,6 +159,10 @@ func (job *JobRegions) GetNextJobs() []task.Job {
 
 func (job *JobRegions) GetTaskGen() task.TaskGenerator {
 	return TaskGenRegions
+}
+
+func (job *JobRegions) GetReport() string {
+	return fmt.Sprintf("Get %d regions.", len(job.regions))
 }
 
 type TspecRegions struct {

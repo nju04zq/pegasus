@@ -117,8 +117,10 @@ func (job *JobGetApartments) GetNextTask(tid string) *task.TaskSpec {
 		}
 		job.nextRegion++
 	}
+	region := job.regions[job.nextRegion]
 	spec := &TspecGetApartments{
-		RegionInfo: job.regions[job.nextRegion],
+		Desc:       fmt.Sprintf("%s(%s)", region.Name, region.Dists[0].Name),
+		RegionInfo: region,
 	}
 	job.nextRegion++
 	return &task.TaskSpec{
@@ -155,7 +157,16 @@ func (job *JobGetApartments) GetTaskGen() task.TaskGenerator {
 	return TaskGenGetApartments
 }
 
+func (job *JobGetApartments) GetReport() string {
+	cnt := 0
+	for _, a := range job.apartments {
+		cnt += len(a)
+	}
+	return fmt.Sprintf("Get %d apartments.", cnt)
+}
+
 type TspecGetApartments struct {
+	Desc       string
 	RegionInfo *Region
 }
 
@@ -166,7 +177,7 @@ func TaskGenGetApartments(tspec *task.TaskSpec) (task.Task, error) {
 	spec := new(TspecGetApartments)
 	task.DecodeSpec(tspec, spec)
 	tsk.region = spec.RegionInfo
-	tsk.desc = fmt.Sprintf("Crawler region %s", tsk.region.Name)
+	tsk.desc = spec.Desc
 	return tsk, nil
 }
 

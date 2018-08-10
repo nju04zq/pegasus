@@ -68,3 +68,7 @@ func (job *JobDumpres) GetNextJobs() []task.Job {
 func (job *JobDumpres) GetTaskGen() task.TaskGenerator {
 	return nil
 }
+
+func (job *JobDumpres) GetReport() string {
+	return ""
+}

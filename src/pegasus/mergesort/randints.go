@@ -86,6 +86,10 @@ func (job *JobRandInts) GetTaskGen() task.TaskGenerator {
 	return TaskGenRandInts
 }
 
+func (job *JobRandInts) GetReport() string {
+	return ""
+}
+
 type taskSpecRandInts struct {
 	Seed int64
 	Size int

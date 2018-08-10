@@ -1,6 +1,7 @@
 #!/usr/env/bin python
 
 import os
+import sys
 import shutil
 import logging
 import MySQLdb
@@ -56,7 +57,7 @@ def export_one_table(db, path, tbl_name):
     fname = tbl_name+".csv"
     src = os.path.join("/tmp", "pegasus_"+fname+ts)
     dst = os.path.join(path, fname)
-    print "Export to {0}.csv".format(tbl_name)
+    sys.stdout.write("\rExport to {0}.csv".format(tbl_name))
     cmd = "SELECT * FROM {tbl} INTO OUTFILE '{fname}' "\
           "FIELDS TERMINATED BY ',' ENCLOSED BY '\"'"\
           "LINES TERMINATED BY '\r\n'".format(tbl=tbl_name, fname=src)
@@ -88,6 +89,10 @@ def export_():
             tf.add(os.path.join(dirname, fname))
     shutil.rmtree(path)
     db.close()
-    print "Data packed to {0}".format(tgz_fname)
+    print "\rData packed to {0}".format(tgz_fname)
 
-export_()
+def main():
+    export_()
+
+if __name__ == "__main__":
+    main()

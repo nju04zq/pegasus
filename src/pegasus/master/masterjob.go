@@ -56,6 +56,7 @@ func (tmeta *TaskMeta) snapshot() *TaskMeta {
 }
 
 type JobMeta struct {
+	JobId      string
 	Kind       string
 	StartTs    time.Time
 	EndTs      time.Time
@@ -65,6 +66,7 @@ type JobMeta struct {
 	Total      int
 	Dispatched int
 	Done       int
+	Report     string
 	TaskMetas  []*TaskMeta
 	taskMetas  map[string]*TaskMeta
 }
@@ -163,6 +165,7 @@ func (m *JobMeta) snapshot() *JobMeta {
 		}
 	}
 	return &JobMeta{
+		JobId:      m.JobId,
 		Kind:       m.Kind,
 		StartTs:    m.StartTs,
 		EndTs:      m.EndTs,
@@ -172,6 +175,7 @@ func (m *JobMeta) snapshot() *JobMeta {
 		Dispatched: m.Dispatched,
 		Done:       m.Done,
 		TaskMetas:  tmetas,
+		Report:     m.Report,
 	}
 }
 
@@ -183,6 +187,7 @@ type JobCtx struct {
 	// Following fields under mutex protection
 	mutex   sync.Mutex
 	jobMeta *JobMeta
+	jobIdx  int
 }
 
 func (ctx *JobCtx) start() {
@@ -194,13 +199,16 @@ func (ctx *JobCtx) start() {
 	ctx.reassignedTasks = make(chan *task.TaskSpec, BUF_TASK_CNT)
 	ctx.jobMeta = new(JobMeta).Init()
 	ctx.jobMeta.StartTs = time.Now()
+	ctx.jobMeta.JobId = fmt.Sprintf("job-%d-%d", time.Now().Unix(), jobctx.jobIdx)
+	ctx.jobIdx++
 }
 
-func (ctx *JobCtx) finish() {
+func (ctx *JobCtx) finish(report string) {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 	ctx.jobMeta.EndTs = time.Now()
 	ctx.jobMeta.Finished = true
+	ctx.jobMeta.Report = report
 }
 
 func (ctx *JobCtx) assignJob(job task.Job, env interface{}) error {
@@ -522,7 +530,7 @@ func jobRunner(job task.Job, env interface{}) error {
 			return err
 		}
 	}
-	jobctx.finish()
+	jobctx.finish(job.GetReport())
 	feedNextJobs(job)
 	log.Info("Run job %q done", job.GetKind())
 	return nil
