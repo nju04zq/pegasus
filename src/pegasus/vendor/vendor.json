@@ -1,0 +1,49 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "MgJ1wThPhvZESDD4uRfsPgibNIo=",
+			"path": "github.com/anaskhan96/soup",
+			"revision": "7a8d31f81bad1a5abeed0d0219c35e5e295a5a76",
+			"revisionTime": "2017-10-07T12:32:34Z"
+		},
+		{
+			"checksumSHA1": "gJopRAiQjzo+wwmCiIjmHsghOaI=",
+			"path": "github.com/go-gorp/gorp",
+			"revision": "17514af53138a819208c8ade08ca1c50d9cd8ac1",
+			"revisionTime": "2018-07-30T18:48:33Z"
+		},
+		{
+			"checksumSHA1": "yeOL8rn1CgRLPxxemPy03uKQhrQ=",
+			"path": "github.com/go-sql-driver/mysql",
+			"revision": "d743639f9cefbadabe171d5fe22c9008b06dd2f5",
+			"revisionTime": "2018-06-01T12:27:13Z"
+		},
+		{
+			"checksumSHA1": "TyrXOBHvvLtawmxfdjrju452928=",
+			"path": "github.com/gorilla/mux",
+			"revision": "e0b5abaaae35242fa74372f26c24107711702a4e",
+			"revisionTime": "2018-05-26T22:17:21Z"
+		},
+		{
+			"checksumSHA1": "w5RcOnfv5YDr3j2bd1YydkPiZx4=",
+			"path": "github.com/mattn/go-isatty",
+			"revision": "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c",
+			"revisionTime": "2017-11-07T05:05:31Z"
+		},
+		{
+			"checksumSHA1": "6WbIuKGVDXQWwDjjEYx4fzLfQO8=",
+			"path": "golang.org/x/net/html",
+			"revision": "1e491301e022f8f977054da4c2d852decd59571f",
+			"revisionTime": "2018-05-30T06:29:46Z"
+		},
+		{
+			"checksumSHA1": "XtSbs1gpyaEsIqf6VRhJsgOQe5U=",
+			"path": "golang.org/x/net/html/atom",
+			"revision": "1e491301e022f8f977054da4c2d852decd59571f",
+			"revisionTime": "2018-05-30T06:29:46Z"
+		}
+	],
+	"rootPath": "pegasus"
+}
