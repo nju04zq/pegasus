@@ -10,6 +10,8 @@ import (
 
 const (
 	PROJ_LIANJIA = "Lianjia-Crawler"
+
+	UPDATE_HISTORY_TABLE_NAME = "update_history"
 )
 
 type ProjLianjiaConf struct {
@@ -76,7 +78,50 @@ func (proj *ProjLianjia) GetErr() error {
 	return proj.err
 }
 
-func (proj *ProjLianjia) Finish() error {
+func (proj *ProjLianjia) Finish(stats *task.ProjStats) error {
 	log.Info(rate.Summary())
+	if err := proj.insertUpdateHistory(stats); err != nil {
+		log.Error("Fail to insert update history, %v", err)
+		return err
+	}
+	return nil
+}
+
+type UpdateHistory struct {
+	StartTs int64  `db:"start,size:64"`
+	EndTs   int64  `db:"end,size:64"`
+	Log     string `db:"log,size:8192"`
+	Result  string `db:"result,size:8192"`
+}
+
+func (proj *ProjLianjia) insertUpdateHistory(stats *task.ProjStats) error {
+	tblName := UPDATE_HISTORY_TABLE_NAME
+	dbmap, err := getDbmap()
+	if err != nil {
+		return err
+	}
+	defer putDbmap()
+	dbmap.AddTableWithName(UpdateHistory{}, tblName)
+	if err := dbmap.CreateTablesIfNotExists(); err != nil {
+		return err
+	}
+	logMsg, err := json.Marshal(stats.Series)
+	if err != nil {
+		return err
+	}
+	updateDbJob := proj.jobs[len(proj.jobs)-1]
+	result, err := json.Marshal(updateDbJob.GetOutput())
+	if err != nil {
+		return err
+	}
+	history := &UpdateHistory{
+		StartTs: stats.StartTs,
+		EndTs:   stats.EndTs,
+		Log:     string(logMsg),
+		Result:  string(result),
+	}
+	if err := dbmap.Insert(history); err != nil {
+		return err
+	}
 	return nil
 }

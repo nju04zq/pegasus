@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"pegasus/log"
@@ -84,6 +85,42 @@ func (ctx *ProjectCtx) checkAndUnsetFree(proj task.Project, config string) (stri
 	return ctx.projId, nil
 }
 
+func (ctx *ProjectCtx) finishProj(err error) {
+	stats := ctx.formatProjStats(err)
+	if err := ctx.proj.Finish(stats); err != nil {
+		log.Error("Fail on project %q finish, %v", projctx.projId, err)
+	}
+	projctx.finish(err)
+}
+
+func (ctx *ProjectCtx) formatProjStats(err error) *task.ProjStats {
+	detail, err := json.Marshal(ctx.projMeta)
+	if err != nil {
+		detail = nil
+	}
+	stats := new(task.ProjStats)
+	stats.StartTs = ctx.projMeta.StartTs.Unix()
+	stats.EndTs = time.Now().Unix()
+	if err == nil {
+		stats.Error = ""
+	} else {
+		stats.Error = err.Error()
+	}
+	if detail != nil {
+		stats.Detail = string(detail)
+	} else {
+		stats.Detail = fmt.Sprintf("Fail to get proj meta, %v", err)
+	}
+	stats.Series = make([]task.ProjTimeSeries, 0)
+	for _, jmeta := range ctx.projMeta.JobMetas {
+		stats.Series = append(stats.Series, task.ProjTimeSeries{
+			Ts:  jmeta.StartTs.Unix(),
+			Job: jmeta.Kind,
+		})
+	}
+	return stats
+}
+
 func (ctx *ProjectCtx) finish(err error) {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
@@ -132,17 +169,13 @@ func projRunner() {
 		projctx.insertJobMeta(jmeta)
 		if err != nil {
 			err = fmt.Errorf("Fail on job %q, %v", job.GetKind(), err)
-			projctx.finish(err)
 			log.Error(err.Error())
-			break
+			projctx.finishProj(err)
+			log.Info("Run project %q finished with err %v", projctx.projId, err)
+			return
 		}
 	}
-	if err := proj.Finish(); err != nil {
-		projctx.finish(err)
-		log.Error("Fail on project %q finish, %v", projctx.projId, err)
-		return
-	}
-	projctx.finish(nil)
+	projctx.finishProj(nil)
 	log.Info("Run project %q finished", projctx.projId)
 }
 

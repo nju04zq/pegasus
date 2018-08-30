@@ -175,8 +175,7 @@ func registerRoutes() {
 
 func initLogger() error {
 	consoleLogger := &log.ConsoleLogger{
-		//Level: log.LevelInfo,
-		Level: log.LevelDebug,
+		Level: log.LevelInfo,
 	}
 	if err := log.RegisterLogger(consoleLogger); err != nil {
 		return err

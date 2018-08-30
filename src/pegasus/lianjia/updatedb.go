@@ -1,9 +1,11 @@
 package lianjia
 
 import (
+	"encoding/json"
 	"fmt"
 	"pegasus/log"
 	"pegasus/task"
+	"pegasus/util"
 	"reflect"
 	"strings"
 
@@ -15,10 +17,17 @@ const (
 	TASK_KIND_UPDATE_DB = JOB_KIND_UPDATE_DB
 )
 
+type UpdateDbStats struct {
+	Region   string
+	Inserted int
+	Updated  int
+}
+
 type JobUpdateDb struct {
 	apartments map[string][]*Apartment
 	regions    []string
 	nextRegion int
+	stats      map[string]*UpdateDbStats
 }
 
 func (job *JobUpdateDb) AppendInput(input interface{}) {
@@ -70,11 +79,23 @@ func (job *JobUpdateDb) GetNextTask(tid string) *task.TaskSpec {
 }
 
 func (job *JobUpdateDb) ReduceTasks(reports []*task.TaskReport) error {
+	job.stats = make(map[string]*UpdateDbStats)
+	for _, report := range reports {
+		stats := new(UpdateDbStats)
+		if err := util.FitDataInto(report.Output, stats); err != nil {
+			return err
+		}
+		job.stats[stats.Region] = stats
+	}
 	return nil
 }
 
 func (job *JobUpdateDb) GetOutput() interface{} {
-	return nil
+	data, err := json.Marshal(job.stats)
+	if err != nil {
+		return nil
+	}
+	return string(data)
 }
 
 func (job *JobUpdateDb) GetNextJobs() []task.Job {
@@ -86,11 +107,14 @@ func (job *JobUpdateDb) GetTaskGen() task.TaskGenerator {
 }
 
 func (job *JobUpdateDb) GetReport() string {
-	cnt := 0
-	for _, a := range job.apartments {
-		cnt += len(a)
+	var total, inserted, updated int
+	for _, stats := range job.stats {
+		inserted += stats.Inserted
+		updated += stats.Updated
 	}
-	return fmt.Sprintf("Update %d apartments.", cnt)
+	total = inserted + updated
+	return fmt.Sprintf("Total %d, %d inserted, %d updated.",
+		total, inserted, updated)
 }
 
 type TspecUpdateDb struct {
@@ -118,6 +142,7 @@ type taskUpdateDb struct {
 	region     string
 	apartments []*Apartment
 	done       bool
+	stats      UpdateDbStats
 }
 
 func (tsk *taskUpdateDb) Init(executorCnt int) error {
@@ -159,7 +184,12 @@ func (tsk *taskUpdateDb) GetNextTasklet(taskletid string) task.Tasklet {
 }
 
 func (tsk *taskUpdateDb) ReduceTasklets(tasklets []task.Tasklet) {
-	return
+	tsk.stats.Region = tsk.region
+	for _, t := range tasklets {
+		tasklet := t.(*taskletUpdateDb)
+		tsk.stats.Inserted += tasklet.stats.Inserted
+		tsk.stats.Updated += tasklet.stats.Updated
+	}
 }
 
 func (tsk *taskUpdateDb) SetError(err error) {
@@ -171,7 +201,7 @@ func (tsk *taskUpdateDb) GetError() error {
 }
 
 func (tsk *taskUpdateDb) GetOutput() interface{} {
-	return nil
+	return &tsk.stats
 }
 
 type taskletUpdateDb struct {
@@ -182,6 +212,7 @@ type taskletUpdateDb struct {
 	dataTblName       string
 	dataChangeTblName string
 	metaChangeTblName string
+	stats             UpdateDbStats
 }
 
 func (t *taskletUpdateDb) GetTaskletId() string {
@@ -227,8 +258,10 @@ func (t *taskletUpdateDb) updateApartments() (err error) {
 		old, ok := oldApartments[apartment.Aid]
 		if !ok {
 			err = t.insertOneApartment(objbuf, apartment)
+			t.stats.Inserted++
 		} else {
 			err = t.updateOneApartment(objbuf, old, apartment)
+			t.stats.Updated++
 		}
 		if err != nil {
 			log.Error("Fail to update apartments, %v", err)
@@ -357,7 +390,7 @@ func (t *taskletUpdateDb) updateOneMetaChange(objbuf *objBuf, aid, item, old, ne
 }
 
 const (
-	OBJ_BUF_SIZE = 4
+	OBJ_BUF_SIZE = 2
 )
 
 type objBuf struct {

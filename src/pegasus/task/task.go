@@ -12,7 +12,20 @@ type Project interface {
 	GetEnv() interface{}
 	GetName() string
 	GetJobs() []Job
-	Finish() error
+	Finish(stats *ProjStats) error
+}
+
+type ProjStats struct {
+	StartTs int64
+	EndTs   int64
+	Error   string
+	Series  []ProjTimeSeries
+	Detail  string
+}
+
+type ProjTimeSeries struct {
+	Ts  int64
+	Job string
 }
 
 type Job interface {

@@ -319,7 +319,7 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 		return nil, err
 	}
 	location := tags[0].Text()
-	location = strings.Replace(location, " ", "", -1)
+	location = t.stripLocation(location)
 	// <div "class"="houseInfo">, for size, withLift
 	tags, err = findAll(root, 1, 1, "div", "class", "houseInfo")
 	if err != nil {
@@ -418,6 +418,11 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 		Nts:      time.Now().Unix(),
 		Uts:      time.Now().Unix(),
 	}, nil
+}
+
+func (t *taskletGetApartments) stripLocation(location string) string {
+	location = strings.Replace(location, " ", "", -1)
+	return location
 }
 
 func (t *taskletGetApartments) parsePosition(tag *soup.Root) (string, int, int, error) {

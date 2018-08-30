@@ -11,12 +11,18 @@ import (
 	"pegasus/util"
 	"sync"
 	"time"
+
+	"github.com/mattn/go-isatty"
 )
 
 const (
 	MONITOR_STATUS_INTERVAL = 1 * time.Second
 	SHOW_STATUS_INTERVAL    = 1 * time.Second
 )
+
+func isTerminal() bool {
+	return isatty.IsTerminal(os.Stdout.Fd())
+}
 
 type ProjMeta struct {
 	Name     string
@@ -69,15 +75,19 @@ func formatJmetaTs(jmeta *JobMeta) string {
 
 func formatHeader(jmeta *JobMeta, header string) string {
 	ts := formatJmetaTs(jmeta)
-	return colorText(ts) + " " + boldText(header)
+	return blueColorText(ts) + " " + boldText(header)
 }
 
 func boldText(text string) string {
 	return "\033[1m" + text + "\033[0m"
 }
 
-func colorText(text string) string {
+func blueColorText(text string) string {
 	return "\033[34m" + text + "\033[0m"
+}
+
+func redColorText(text string) string {
+	return "\033[31m" + text + "\033[0m"
 }
 
 type projEvent interface {
@@ -396,12 +406,16 @@ func (mgr *progressMgr) formatShowMsg() (string, bool) {
 	if lastJmeta.JobId != mgr.lastJobid {
 		buf.WriteString(lastEvt.getHeader() + "\n")
 	}
-	if lastJmeta.Total == lastJmeta.Done {
-		buf.WriteString(lastEvt.getReport() + "\n")
+	if lastJmeta.Finished {
+		if lastJmeta.ErrMsg == "" {
+			buf.WriteString(lastEvt.getReport() + "\n")
+		} else {
+			buf.WriteString(redColorText(lastJmeta.ErrMsg) + "\n")
+		}
 		mgr.events = make([]projEvent, 0)
 		mgr.alignIdx = len(mgr.pmeta.JobMetas)
 	} else {
-		if lastEvt.showProgress() {
+		if isTerminal() && lastEvt.showProgress() {
 			buf.WriteString(lastEvt.getProgress())
 		}
 		mgr.events = []projEvent{lastEvt}
@@ -412,7 +426,7 @@ func (mgr *progressMgr) formatShowMsg() (string, bool) {
 }
 
 func (mgr *progressMgr) clearLastLine() {
-	if mgr.lastLine == "" {
+	if !isTerminal() || mgr.lastLine == "" {
 		return
 	}
 	buf := make([]byte, 80)
@@ -472,7 +486,7 @@ func (mgr *progressMgr) run() {
 	wg.Wait()
 	if mgr.pmeta != nil {
 		msg := boldText(fmt.Sprintf("Project done, taken %s.", mgr.cost()))
-		fmt.Printf("%s %s\n", formatTs(time.Now()), msg)
+		fmt.Printf("%s %s\n", blueColorText(formatTs(time.Now())), msg)
 	}
 }
 

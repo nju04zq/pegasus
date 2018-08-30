@@ -53,8 +53,8 @@ func startProj(ip string, port int) (string, error) {
 	/*
 		data := map[string]map[string][]string{
 			"districts": {
-				"闵行": []string{"梅陇"},
-				//"闵行": []string{"七宝", "梅陇", "莘庄", "春申", "古美"},
+				//"闵行": []string{"梅陇"},
+				"闵行": []string{"七宝", "梅陇", "莘庄", "春申", "古美"},
 			},
 		}
 	*/

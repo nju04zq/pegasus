@@ -315,14 +315,11 @@ func (mgr *workerMgr) handleTaskReport(ctx *JobCtx, key string, report *task.Tas
 }
 
 func (mgr *workerMgr) updateWorkerHb(key string, ts time.Time) (err error) {
-	log.Info("Update HB for worker %q", key)
+	log.Debug("Update HB for worker %q", key)
 	mgr.mutex.Lock()
 	defer func() {
 		mgr.mutex.Unlock()
-		log.Info("Update HB for worker %q done, err %v", key, err)
 	}()
-	// TODO
-	log.Info("update hb in lock")
 	w, ok := mgr.workers[key]
 	if !ok {
 		err = fmt.Errorf("Worker with key %q not found", key)
@@ -460,11 +457,8 @@ func monitorOneWorker(w *Worker) *monitorRec {
 }
 
 func monitorWorkers() []*monitorRec {
-	log.Info("Monitor workers")
 	wmgr.mutex.Lock()
 	defer wmgr.mutex.Unlock()
-	// TODO
-	log.Info("Monitor workers in lock")
 	recs := make([]*monitorRec, 0)
 	keys := make([]string, len(wmgr.workers))
 	i := 0
@@ -481,18 +475,18 @@ func monitorWorkers() []*monitorRec {
 }
 
 func wmgrMonitorMain(args interface{}) {
-	log.Info("Start WMGR monitor")
+	log.Debug("Start WMGR monitor")
 	t1 := time.Now()
 	recs := monitorWorkers()
 	t2 := time.Now()
-	log.Info("WMGR monitor done")
+	log.Debug("WMGR monitor done")
 	tbl := new(util.PrettyTable)
 	tbl.Init([]string{"Key", "Name", "From", "To"})
 	for _, rec := range recs {
 		tbl.AppendLine([]string{rec.workerKey, rec.workerName,
 			rec.oldStatus, rec.newStatus})
 	}
-	log.Info("WMGR monitor took %v, records:\n%s", t2.Sub(t1), tbl.Format())
+	log.Debug("WMGR monitor took %v, records:\n%s", t2.Sub(t1), tbl.Format())
 }
 
 func init() {

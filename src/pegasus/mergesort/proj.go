@@ -47,6 +47,6 @@ func (proj *ProjMergesort) GetErr() error {
 	return proj.err
 }
 
-func (proj *ProjMergesort) Finish() error {
+func (proj *ProjMergesort) Finish(stats *task.ProjStats) error {
 	return nil
 }

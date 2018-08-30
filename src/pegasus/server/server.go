@@ -49,7 +49,7 @@ type serverHandler struct {
 }
 
 func (h *serverHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Info("Remote %s, method %s, access %s", r.RemoteAddr, r.Method, r.RequestURI)
+	log.Debug("Remote %s, method %s, access %s", r.RemoteAddr, r.Method, r.RequestURI)
 	h.handler.ServeHTTP(w, r)
 }
 

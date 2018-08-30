@@ -17,9 +17,7 @@ import (
 var tskctx = &TaskCtx{}
 
 const (
-	BUF_TASKLET_CNT = 8
-	// TODO test purpose
-	//RUNNING_EXECUTOR_CNT = 4
+	BUF_TASKLET_CNT      = 8
 	RUNNING_EXECUTOR_CNT = 2
 	TASKLET_MAX_RETRY    = 3
 )
