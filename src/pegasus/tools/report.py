@@ -70,6 +70,26 @@ def get_data_tables(db):
             tbls.append(name)
     return tbls
 
+def get_change(query, header, idx, topn):
+    db = SQLDB()
+    tbls = get_change_tables(db)
+    valset = [None for i in xrange(len(tbls))]
+    for i, tbl in enumerate(tbls):
+        tbl = tbl[:-len("_change")]
+        valset[i] = db.select(query.format(tbl=tbl))
+    db.close()
+    res = reduceValset(valset, idx, topn)
+    show_result(res, header)
+
+def get_change_tables(db):
+    res = db.select("SHOW TABLES")
+    tbls = []
+    for val in res:
+        name = val[0]
+        if name.endswith("_change"):
+            tbls.append(name)
+    return tbls
+
 def reduceValset(valset, idx, topn):
     if topn > 0:
         getmax = True
@@ -268,8 +288,64 @@ def price2():
     topn = -10
     get_data(query, header, idx, topn)
 
+def size1():
+    query = "SELECT location, aid, CONVERT(size, DECIMAL), price, total FROM {tbl} " + \
+            "WHERE DAYOFMONTH(FROM_UNIXTIME(uts)) = DAYOFMONTH(NOW()) "+ \
+            "ORDER BY CONVERT(size, DECIMAL) DESC " + \
+            "LIMIT 10"
+    header = ["location", "aid", "size", "price", "total"]
+    idx = 2
+    topn = 10
+    get_data(query, header, idx, topn)
+
+def size2():
+    query = "SELECT location, aid, CONVERT(size, DECIMAL), price, total FROM {tbl} " + \
+            "WHERE DAYOFMONTH(FROM_UNIXTIME(uts)) = DAYOFMONTH(NOW()) "+ \
+            "ORDER BY CONVERT(size, DECIMAL)" + \
+            "LIMIT 10"
+    header = ["location", "aid", "size", "price", "total"]
+    idx = 2
+    topn = -10
+    get_data(query, header, idx, topn)
+
+def priceInc():
+    query = '''
+    SELECT aid, 
+           (select location from {tbl}_data where {tbl}_data.aid = {tbl}_change.aid) AS location,
+           old_total,
+           new_total,
+           (new_total-old_total) AS 'change',
+           DATE_FORMAT(FROM_UNIXTIME(ts),'%Y-%m-%d') as 'date'
+           FROM {tbl}_change
+           WHERE DATEDIFF(NOW(), FROM_UNIXTIME(ts)) <= 3
+           order by (new_total-old_total) DESC
+           limit 10;
+'''
+    header = ["aid", "location", "old", "new", "diff", "date"]
+    idx = 4
+    topn = 10
+    get_change(query, header, idx, topn)
+
+def priceDec():
+    query = '''
+    SELECT aid, 
+           (select location from {tbl}_data where {tbl}_data.aid = {tbl}_change.aid) AS location,
+           old_total,
+           new_total,
+           (new_total-old_total) AS 'change',
+           DATE_FORMAT(FROM_UNIXTIME(ts),'%Y-%m-%d') as 'date'
+           FROM {tbl}_change
+           WHERE DATEDIFF(NOW(), FROM_UNIXTIME(ts)) <= 3
+           order by (new_total-old_total)
+           limit 10;
+'''
+    header = ["aid", "location", "old", "new", "diff", "date"]
+    idx = 4
+    topn = -10
+    get_change(query, header, idx, topn)
+
 def main():
-    price1()
+    priceDec()
 
 if __name__ == "__main__":
     reload(sys)

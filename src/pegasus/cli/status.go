@@ -79,15 +79,27 @@ func formatHeader(jmeta *JobMeta, header string) string {
 }
 
 func boldText(text string) string {
-	return "\033[1m" + text + "\033[0m"
+	if isTerminal() {
+		return "\033[1m" + text + "\033[0m"
+	} else {
+		return text
+	}
 }
 
 func blueColorText(text string) string {
-	return "\033[34m" + text + "\033[0m"
+	if isTerminal() {
+		return "\033[34m" + text + "\033[0m"
+	} else {
+		return text
+	}
 }
 
 func redColorText(text string) string {
-	return "\033[31m" + text + "\033[0m"
+	if isTerminal() {
+		return "\033[31m" + text + "\033[0m"
+	} else {
+		return text
+	}
 }
 
 type projEvent interface {
