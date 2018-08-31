@@ -8,7 +8,7 @@ import MySQLdb
 import unicodedata
 
 MySQL_conf = {
-        "host": "localhost",
+        "host": "127.0.0.1",
         "user": "root",
         "passwd": "root",
         "db": "lianjia_pegasus",
