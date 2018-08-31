@@ -69,7 +69,8 @@ def get_tables(db):
     vals = db.select(cmd)
     tables = []
     for val in vals:
-        tables.append(val[0])
+        if val[0] != "update_history":
+            tables.append(val[0])
     return tables
 
 def export_():
