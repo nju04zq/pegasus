@@ -503,7 +503,7 @@ func (mgr *progressMgr) run() {
 }
 
 func saveTo(data string) {
-	fp, err := os.OpenFile("/tmp/xx", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	fp, err := os.OpenFile("/tmp/pegasus_log", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		panic(err)
 	}
