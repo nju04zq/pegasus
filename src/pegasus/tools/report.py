@@ -138,6 +138,7 @@ widths = [
     (120831, 1), (262141, 2), (1114109, 1),
 ]
  
+# http://likang.me/blog/2012/04/13/calculate-character-width-in-python/
 def get_char_width(o):
     """Return the screen column width for unicode ordinal o."""
     global widths
@@ -157,8 +158,8 @@ def get_width(s):
     else:
         return len(s)
     for o in s.decode("utf-8"):
-        width += get_char_width(o)
-    return width*2
+        width += get_char_width(ord(o))
+    return width
 
 class PrettyTable(object):
     def __init__(self, header, lines):
@@ -350,7 +351,7 @@ def priceIncRatio():
            (select location from {tbl}_data where {tbl}_data.aid = {tbl}_change.aid) AS location,
            old_total,
            new_total,
-           ((new_total-old_total)/old_total) AS 'ratio',
+           ((new_total-old_total)/old_total*100) AS 'ratio',
            DATE_FORMAT(FROM_UNIXTIME(ts),'%Y-%m-%d') as 'date'
            FROM {tbl}_change
            WHERE DATEDIFF(NOW(), FROM_UNIXTIME(ts)) <= 3
@@ -368,7 +369,7 @@ def priceDecRatio():
            (select location from {tbl}_data where {tbl}_data.aid = {tbl}_change.aid) AS location,
            old_total,
            new_total,
-           ((new_total-old_total)/old_total) AS 'ratio',
+           ((new_total-old_total)/old_total*100) AS 'ratio',
            DATE_FORMAT(FROM_UNIXTIME(ts),'%Y-%m-%d') as 'date'
            FROM {tbl}_change
            WHERE DATEDIFF(NOW(), FROM_UNIXTIME(ts)) <= 3
@@ -381,7 +382,7 @@ def priceDecRatio():
     get_change(query, header, idx, topn)
 
 def main():
-    priceDecRatio()
+    priceIncRatio()
 
 if __name__ == "__main__":
     reload(sys)
