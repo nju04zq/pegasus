@@ -344,8 +344,44 @@ def priceDec():
     topn = -10
     get_change(query, header, idx, topn)
 
+def priceIncRatio():
+    query = '''
+    SELECT aid, 
+           (select location from {tbl}_data where {tbl}_data.aid = {tbl}_change.aid) AS location,
+           old_total,
+           new_total,
+           ((new_total-old_total)/old_total) AS 'ratio',
+           DATE_FORMAT(FROM_UNIXTIME(ts),'%Y-%m-%d') as 'date'
+           FROM {tbl}_change
+           WHERE DATEDIFF(NOW(), FROM_UNIXTIME(ts)) <= 3
+           order by ((new_total-old_total)/old_total) DESC
+           limit 10;
+'''
+    header = ["aid", "location", "old", "new", "ratio", "date"]
+    idx = 4
+    topn = 10
+    get_change(query, header, idx, topn)
+
+def priceDecRatio():
+    query = '''
+    SELECT aid, 
+           (select location from {tbl}_data where {tbl}_data.aid = {tbl}_change.aid) AS location,
+           old_total,
+           new_total,
+           ((new_total-old_total)/old_total) AS 'ratio',
+           DATE_FORMAT(FROM_UNIXTIME(ts),'%Y-%m-%d') as 'date'
+           FROM {tbl}_change
+           WHERE DATEDIFF(NOW(), FROM_UNIXTIME(ts)) <= 3
+           order by ((new_total-old_total)/old_total)
+           limit 10;
+'''
+    header = ["aid", "location", "old", "new", "ratio", "date"]
+    idx = 4
+    topn = -10
+    get_change(query, header, idx, topn)
+
 def main():
-    priceDec()
+    priceDecRatio()
 
 if __name__ == "__main__":
     reload(sys)
