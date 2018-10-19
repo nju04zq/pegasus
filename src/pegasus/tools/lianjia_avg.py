@@ -257,10 +257,10 @@ class LoDayPrices(object):
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-location = "未名园"
-#location = ""
-region = "meilong"
-#region = "jiangninglu"
+# 小区，为空则检查所有小区
+location = ""
+# 板块
+region = "jiangninglu"
 day_prices1 = LoDayPrices(location, region)
 
 sns.set_style("darkgrid")
