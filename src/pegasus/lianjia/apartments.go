@@ -394,13 +394,16 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 	if err != nil {
 		return nil, err
 	}
-	re = regexp.MustCompile(`共(\d+)次带看`)
-	res = re.FindStringSubmatch(render(&tags[0]))
-	if len(res) == 0 {
-		return nil, fmt.Errorf("Follow info not found")
-	}
-	visitcnt64, _ := strconv.ParseInt(res[1], 10, 32)
-	visitcnt := int(visitcnt64)
+	/*
+		 //带看信息页面中不再提供 2019/07/05出现, 2019/07/25修复
+			re = regexp.MustCompile(`共(\d+)次带看`)
+			res = re.FindStringSubmatch(render(&tags[0]))
+			if len(res) == 0 {
+				return nil, fmt.Errorf("Follow info not found")
+			}
+			visitcnt64, _ := strconv.ParseInt(res[1], 10, 32)
+			visitcnt := int(visitcnt64)
+	*/
 	return &Apartment{
 		Aid:      aid,
 		Location: location,
@@ -414,7 +417,6 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 		Tfloor:   tfloor,
 		Year:     year,
 		Withlift: withLift,
-		Visitcnt: visitcnt,
 		Nts:      time.Now().Unix(),
 		Uts:      time.Now().Unix(),
 	}, nil
