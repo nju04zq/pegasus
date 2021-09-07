@@ -326,7 +326,7 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 		return nil, err
 	}
 	s := render(&tags[0])
-	re := regexp.MustCompile(`\|[ ]* ([0-9.]+)平`)
+	re := regexp.MustCompile(`\|[ ]* ([0-9.]+)平米`)
 	res := re.FindStringSubmatch(s)
 	if len(res) == 0 {
 		log.Error("Apartment size not found in %s", s)
@@ -345,19 +345,20 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 		return nil, err
 	}
 	s = render(&tags[0])
-	re = regexp.MustCompile(`单价(\d+)元/平米`)
+	re = regexp.MustCompile(`([,0-9]+)元/平`)
 	res = re.FindStringSubmatch(s)
 	if len(res) == 0 {
-		log.Error("Apartment size not found in %s", s)
+		log.Error("Apartment price not found in %s", s)
 		return nil, fmt.Errorf("Price info not found")
 	}
-	price64, err := strconv.ParseInt(res[1], 10, 32)
+	s = strings.Replace(res[1], ",", "", -1)
+	price64, err := strconv.ParseInt(s, 10, 32)
 	if err != nil {
-		return nil, fmt.Errorf("Price %q not int", res[1])
+		return nil, fmt.Errorf("Price %q not int", s)
 	}
 	price := int(price64)
 	// <div class="totalPrice">, for total
-	tags, err = findAll(root, 1, 1, "div", "class", "totalPrice")
+	tags, err = findAll(root, 1, 1, "div", "class", "totalPrice totalPrice2")
 	if err != nil {
 		return nil, err
 	}
@@ -371,8 +372,8 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 		return nil, fmt.Errorf("Price %q not float", res[1])
 	}
 	total := int(total64)
-	// <div class="positionInfo">, for floor, tfloor, year
-	tags, err = findAll(root, 1, 1, "div", "class", "positionInfo")
+	// <div class="houseInfo">, for floor, tfloor, year
+	tags, err = findAll(root, 1, 1, "div", "class", "houseInfo")
 	if err != nil {
 		return nil, err
 	}
@@ -380,29 +381,26 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 	if err != nil {
 		return nil, err
 	}
-	// <span class="subway">, for subway, station, smeter
+	// <span class="subway">, for subway
 	tags, err = findAll(root, 0, 1, "span", "class", "subway")
 	if err != nil {
 		return nil, err
 	}
-	subway, station, smeter, err := t.parseSubway(tags)
-	if err != nil {
-		return nil, err
-	}
-	// <div class="followInfo">, for visitcnt
-	tags, err = findAll(root, 1, 1, "div", "class", "followInfo")
-	if err != nil {
-		return nil, err
-	}
+	subway := t.parseSubway(tags)
 	/*
-		 //带看信息页面中不再提供 2019/07/05出现, 2019/07/25修复
-			re = regexp.MustCompile(`共(\d+)次带看`)
-			res = re.FindStringSubmatch(render(&tags[0]))
-			if len(res) == 0 {
-				return nil, fmt.Errorf("Follow info not found")
-			}
-			visitcnt64, _ := strconv.ParseInt(res[1], 10, 32)
-			visitcnt := int(visitcnt64)
+		// <div class="followInfo">, for visitcnt
+		tags, err = findAll(root, 1, 1, "div", "class", "followInfo")
+		if err != nil {
+			return nil, err
+		}
+			 //带看信息页面中不再提供 2019/07/05出现, 2019/07/25修复
+				re = regexp.MustCompile(`共(\d+)次带看`)
+				res = re.FindStringSubmatch(render(&tags[0]))
+				if len(res) == 0 {
+					return nil, fmt.Errorf("Follow info not found")
+				}
+				visitcnt64, _ := strconv.ParseInt(res[1], 10, 32)
+				visitcnt := int(visitcnt64)
 	*/
 	return &Apartment{
 		Aid:      aid,
@@ -411,8 +409,6 @@ func (t *taskletGetApartments) parseApartment(root *soup.Root) (*Apartment, erro
 		Size:     size,
 		Total:    total,
 		Subway:   subway,
-		Station:  station,
-		Smeter:   smeter,
 		Floor:    floor,
 		Tfloor:   tfloor,
 		Year:     year,
@@ -429,11 +425,12 @@ func (t *taskletGetApartments) stripLocation(location string) string {
 
 func (t *taskletGetApartments) parsePosition(tag *soup.Root) (string, int, int, error) {
 	floor, tfloor, year := "U", 0, 0
-	re := regexp.MustCompile(`span>(.*)楼层.*共(\d+)层.*(\d{4})年建`)
+	re := regexp.MustCompile(`span>.*(低|中|高)楼层.*共(\d+)层.*(\d{4})年建`)
 	res := re.FindStringSubmatch(render(tag))
 	if len(res) == 0 {
 		return floor, tfloor, year, nil
 	}
+	//log.Debug("position res, %q, %q, %q", res[1], res[2], res[3])
 	switch res[1] {
 	case "低":
 		floor = "L"
@@ -454,19 +451,17 @@ func (t *taskletGetApartments) parsePosition(tag *soup.Root) (string, int, int, 
 	return floor, tfloor, year, nil
 }
 
-func (t *taskletGetApartments) parseSubway(tags []soup.Root) (int, string, int, error) {
-	subway, station, smeter := 0, "", 0
+func (t *taskletGetApartments) parseSubway(tags []soup.Root) int {
+	// 2021/09/07，地铁详细信息不出现很久了
+	subway := 0
 	if len(tags) == 0 {
-		return subway, station, smeter, nil
+		return subway
 	}
-	re := regexp.MustCompile(`距离(\d+)号线(.*)站(\d+)米`)
+	re := regexp.MustCompile(`近地铁`)
 	res := re.FindStringSubmatch(render(&tags[0]))
 	if len(res) == 0 {
-		return subway, station, smeter, nil
+		return subway
 	}
-	subway64, _ := strconv.ParseInt(res[1], 10, 32)
-	smeter64, _ := strconv.ParseInt(res[3], 10, 32)
-	subway, smeter = int(subway64), int(smeter64)
-	station = res[2]
-	return subway, station, smeter, nil
+	subway = 99 //无法解析具体地铁线
+	return subway
 }
